@@ -45,7 +45,7 @@ export function noticeText(d,actor,b={}){
  const label=e=>(e.kind==='purchase'?(e.type==='period'?'начало абонемента':'начало пакета'):e.kind==='payment'?'оплата '+rub(e.amount):e.kind==='visit'?'посещение':'возврат посещения')+' · '+day(e.date);
  const e=d.events?.find(x=>x.id===b.eventId);let body;
  if(b.action==='accept')body='🎉 '+who+' теперь с тобой в Сервиснике';
- else if(b.action==='offer')body='✏️ Новые условия от '+who+'. Загляни.';
+ else if(b.action==='offer')body=d.state==='active'?'🎉 '+who+' на связи! Твои услуги уже здесь 👇':'✏️ Новые условия от '+who+'. Загляни.';
  else if(b.action==='activate')body='✅ Условия подтверждены: '+who;
  else if(b.action==='close')body=who+' больше не ведёт с тобой записи. История осталась 📁';
  else if(e&&b.action==='confirm')body='✅ Подтверждено: '+label(e);
@@ -57,7 +57,7 @@ export function noticeText(d,actor,b={}){
 export function transition(data,actor,body,today=new Date().toISOString().slice(0,10)){
  const d=structuredClone(data),provider=d.provider?.id===actor.id,client=d.client?.id===actor.id;if(!provider&&!client)fail('forbidden',403);
  if(d.closed)fail('connection_closed',409);
- if(body.action==='offer'){if(!provider||d.events.length)fail('terms_locked',409);const items=Array.isArray(body.services)?body.services:[body.terms];if(!items.length||items.length>20)fail('invalid_terms');d.terms=terms(items[0]);d.additionalTerms=items.slice(1).map(x=>({id:crypto.randomUUID(),terms:terms(x)}));d.state='offered';return d}
+ if(body.action==='offer'){if(!provider||d.events.length)fail('terms_locked',409);const items=Array.isArray(body.services)?body.services:[body.terms];if(!items.length||items.length>20)fail('invalid_terms');d.terms=terms(items[0]);d.additionalTerms=items.slice(1).map(x=>({id:crypto.randomUUID(),terms:terms(x)}));if(d.state==='requested'){d.state='active';d.joinedFromRequest=true}else d.state='offered';return d}
  if(body.action==='activate'){if(!client||d.state!=='offered')fail('invalid_state',409);d.state='active';return d}
  if(body.action==='close'){d.closed=true;return d}
  if(d.state!=='active')fail('confirm_terms',409);
@@ -132,7 +132,7 @@ export async function sharedRoute(request,env,defer=null,transport=fetch){
   if(path==='change'&&request.method==='POST'){
    const row=await env.DB.prepare('SELECT * FROM shared_records WHERE id = ? AND (provider_id = ? OR client_id = ?)').bind(b.id||'',actor.id,actor.id).first();if(!row)fail('not_found',404);
    const current=JSON.parse(row.data),prior=current.events.find(e=>e.id===b.eventId);if(prior&&((['confirm','reject'].includes(b.action)&&prior.resolvedBy===actor.id&&prior.status===(b.action==='confirm'?'confirmed':'rejected'))||(prior.actor===actor.id&&prior.kind===b.action&&prior.date===b.date)))return sj({record:publicRecord(row)});if(!Number.isInteger(b.version)||row.version!==b.version)fail('conflict',409);
-   const offset=Number.isInteger(b.timezoneOffset)&&b.timezoneOffset>=-840&&b.timezoneOffset<=720?b.timezoneOffset:0,localToday=new Date(Date.now()-offset*60000).toISOString().slice(0,10);const d=transition(JSON.parse(row.data),actor,b,localToday),saved=await persistSharedConnection(env,row,d,b.action==='activate');notify(d,row.id,actor,b);return sj(saved);
+   const offset=Number.isInteger(b.timezoneOffset)&&b.timezoneOffset>=-840&&b.timezoneOffset<=720?b.timezoneOffset:0,localToday=new Date(Date.now()-offset*60000).toISOString().slice(0,10);const d=transition(JSON.parse(row.data),actor,b,localToday),saved=await persistSharedConnection(env,row,d,b.action==='activate'||b.action==='offer'&&d.state==='active');notify(d,row.id,actor,b);return sj(saved);
   }
   fail('not_found',404);
  }catch(e){return sj({error:e.status?e.message:'storage_error'},e.status||503)}
