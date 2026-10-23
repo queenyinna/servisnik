@@ -47,7 +47,7 @@ export function noticeText(d,actor,b={}){
  if(b.action==='accept')body=d.client?.id===actor?.id?'Приглашение принято: '+who:'Запрос принят: '+who;
  else if(b.action==='offer')body='Новые условия от '+who+'. Посмотрите.';
  else if(b.action==='activate')body='Условия подтверждены: '+who;
- else if(b.action==='close')body='Связь завершена: '+who;
+ else if(b.action==='close')body='Отключено: '+who;
  else if(e&&b.action==='confirm')body='Подтверждено: '+label(e);
  else if(e&&b.action==='reject')body='Отклонено: '+label(e);
  else if(e)body=who+': '+label(e)+'\nПодтвердите, если всё верно.';
