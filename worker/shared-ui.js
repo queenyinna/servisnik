@@ -77,7 +77,7 @@ function renderSharedPlan(){if(!sharedReady)return;const ranges=planRanges(),sta
 function sharedProfileBack(force=false){if(sharedBusy)return false;if(!force&&sharedBackRecord){const record=sharedRecords.find(r=>r.id===sharedCurrent);if(record){openSharedProfile(record);return false}}return true}
 
 function incomeTotals(month){let paid=0,prepaid=0,due=0;for(const r of sharedRecords.filter(x=>x.provider?.id===sharedUser?.id)){paid+=(r.events||[]).filter(e=>e.kind==='payment'&&e.status==='confirmed'&&e.date.slice(0,7)===month).reduce((n,e)=>n+e.amount,0);prepaid+=r.summary.prepaid||0;due+=r.summary.due}return {paid,prepaid,due}}
-function openIncomeDetails(){sharedCurrent=null;const host=sharedHost('Мой доход');$('incomePeriodHost').hidden=false;const records=sharedRecords.filter(r=>r.provider?.id===sharedUser?.id),{paid,prepaid,due}=incomeTotals($('workIncomeMonth').value);const totals=node('section','plan-widget'),amounts=node('div','plan-amounts');for(const [label,value] of [['Получено',paid],['Предоплачено',prepaid],['Запланировано',due]]){const cell=node('div','');cell.append(node('span','',label),node('strong','',money(value)));amounts.append(cell)}totals.append(amounts);const month=$('workIncomeMonth');$('incomeRange').textContent=month.selectedOptions[0]?.textContent||'';host.append(totals);for(const r of records)host.append(sharedRow(r,true))}
+function openIncomeDetails(){sharedCurrent=null;const host=sharedHost('План доходов');$('incomePeriodHost').hidden=false;const records=sharedRecords.filter(r=>r.provider?.id===sharedUser?.id),{paid,prepaid,due}=incomeTotals($('workIncomeMonth').value);const totals=node('section','plan-widget'),amounts=node('div','plan-amounts');for(const [label,value] of [['Получено',paid],['Предоплачено',prepaid],['Запланировано',due]]){const cell=node('div','');cell.append(node('span','',label),node('strong','',money(value)));amounts.append(cell)}totals.append(amounts);const month=$('workIncomeMonth');$('incomeRange').textContent=month.selectedOptions[0]?.textContent||'';host.append(totals);for(const r of records)host.append(sharedRow(r,true))}
 const incomeWidget=$('workView').querySelector('.income');incomeWidget.onclick=()=>openIncomeDetails();incomeWidget.onkeydown=e=>{if(e.target===incomeWidget&&(e.key==='Enter'||e.key===' ')){e.preventDefault();openIncomeDetails()}};
 
 const expenseWidget=$('personalView').querySelector('.expense-overview');expenseWidget.onclick=e=>{if(!e.target.closest('button,[role=button]'))openBudgetPlan()};
@@ -99,7 +99,7 @@ function contactPickerButton(onPicked){
 async function pickTelegramContact(button,onPicked){
  if(button.disabled||!canPickTelegramContact())return;button.disabled=true;button.setAttribute('aria-busy','true');let done=false,timer;
  const finish=()=>{if(done)return false;done=true;clearTimeout(timer);button.disabled=false;button.setAttribute('aria-busy','false');return true};
- try{await flushDraft();const prepared=await contactPickAPI('prepare','POST');
+ try{const prepared=await contactPickAPI('prepare','POST');
  timer=setTimeout(()=>{if(finish())showToast('Выбор не завершён. Можно повторить.')},90000);
  tg.requestChat(prepared.buttonId,async selected=>{
   if(done)return;if(!selected){finish();return}
@@ -109,3 +109,4 @@ async function pickTelegramContact(button,onPicked){
  }catch{if(finish())showToast('Выбор недоступен. Введи @username вручную.',false,'error')}
 }
 function applySetupContact(w,person){if(setupState!==w||$('setup').hidden||w.step!==1)return;if(!w.providerName.trim())w.providerName=person.name;w.contact=person.username?'@'+person.username:'';w.channel=person.username?'Telegram':'';renderSetupFields();setupChanged();if(!person.username)showToast('У контакта нет @username. Введи телефон или ссылку.')}
+
