@@ -103,7 +103,7 @@ body .ui-swipe .client-swipe-action svg{display:block;width:21px;height:21px;fle
 body .ui-swipe[data-action=delete] .client-delete,body .ui-swipe[data-action=attend] .client-attend,body .ui-swipe.swipe-hint .client-swipe-action,body #workView .ui-swipe[data-action=delete] .client-delete,body #workView .ui-swipe[data-action=attend] .client-attend,body #workView .ui-swipe.swipe-hint .client-swipe-action{opacity:1;visibility:visible;pointer-events:auto}
 body .ui-swipe.swipe-hint .client-swipe-action{pointer-events:none}
 body .ui-swipe.swipe-dragging .swipe-face{transition:none}
-body .service-delete-icon{display:inline-flex;align-items:center;justify-content:center;width:44px;min-width:44px;height:44px;padding:0;background:transparent;color:#8d4146;border:0;border-radius:14px}
+body .service-delete-icon{display:inline-flex;align-items:center;justify-content:center;width:44px;min-width:44px;height:44px;padding:0;background:transparent;color:var(--ui-ink);border:0;border-radius:14px}
 body .service-delete-icon svg{width:21px;height:21px;fill:none;stroke:currentColor;stroke-width:1.7;stroke-linecap:round;stroke-linejoin:round}
 @media(prefers-reduced-motion:reduce){body .ui-swipe .swipe-face{transition:none}}
 
@@ -114,10 +114,10 @@ body .finance-widget .finance-header h2,body #workView .finance-widget .finance-
 body .finance-widget .plan-open{font:inherit;color:inherit;text-align:left}
 body .finance-widget :is(.settings-button,.gear),body #workView .finance-widget .gear{width:44px;height:44px;min-width:44px;flex:0 0 44px;padding:0;background:#ffffff16;color:#fff;border:0;border-radius:14px}
 body .finance-widget :is(.settings-button,.gear) svg{width:20px;height:20px;stroke:currentColor;fill:none;stroke-width:1.7}
-body .finance-widget .finance-values,body #workView .finance-widget .finance-values{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:14px;padding:0}
+body .finance-widget .finance-values,body #workView .finance-widget .finance-values{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:12px;padding:0}
 body .finance-widget .finance-values>div{min-width:0}
 body .finance-widget .finance-values :is(.small,.label),body #workView .finance-widget .label{display:block;margin:0 0 8px;font-size:12px;font-weight:400;line-height:1.4;color:#b9b9c0}
-body .finance-widget .finance-values :is(strong,.number),body #workView .finance-widget .number{display:block;margin:0;color:#fff;font-size:clamp(22px,6vw,30px);font-weight:600;line-height:1.2;letter-spacing:-.8px;font-variant-numeric:tabular-nums;white-space:normal;overflow-wrap:anywhere}
+body .finance-widget .finance-values :is(strong,.number),body #workView .finance-widget .number{display:block;margin:0;color:#fff;font-size:clamp(18px,5vw,24px);font-weight:600;line-height:1.2;letter-spacing:-.8px;font-variant-numeric:tabular-nums;white-space:normal;overflow-wrap:anywhere}
 body .finance-widget .finance-values>div:last-child :is(strong,.number),body #workView .finance-widget .expected .number{color:#b9b9c0}
 body .finance-widget .finance-battery,body #workView .finance-widget .finance-battery{display:flex;align-items:center;gap:4px;margin:24px 0 0;padding:0}
 body .finance-widget .finance-battery :is(.battery-body,.track),body #workView .finance-widget .track{display:flex;flex:1;height:16px;border:0;border-radius:5px;background:#505054;padding:0;gap:0;overflow:hidden}
@@ -136,3 +136,7 @@ body .shared-service .service-open>div{min-width:0}
 body .shared-service .service-open{align-items:center}
 body .person-avatar-large{width:64px;height:64px;flex-basis:64px;font-size:23px!important;margin:0 auto 16px!important}
 body .invite-welcome>.person-avatar{display:flex!important}
+
+/* Specialist lists: plus sits on the tabs row, like «Мои записи» + */
+body #workView .work-tabs{width:calc(100% - 60px)}
+body #workView .list-toolbar{margin:-70px 0 22px}
