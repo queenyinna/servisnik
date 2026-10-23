@@ -151,3 +151,10 @@ body .offer-tick{width:26px;height:26px;border-radius:50%;border:1.5px solid #c8
 body .offer-pick.on .offer-tick{background:var(--ui-ink);border-color:var(--ui-ink);color:#fff}
 /* Save stays in place; faded until something changes */
 body:not(.write-locked) .primary:disabled{opacity:.35;cursor:default}
+/* Invitation: who invites in one row, compact offer cards */
+body .invite-from{display:flex;align-items:center;gap:12px;margin:4px 0 16px}
+body .invite-from div{display:grid;gap:2px;min-width:0}
+body .invite-from strong{font-size:18px;font-weight:600}
+body .invite-offer{padding:16px;margin:0 0 10px}
+body .invite-offer h3{margin:0 0 4px;font-size:18px}
+body .invite-offer p{margin:0}
