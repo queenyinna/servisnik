@@ -40,6 +40,20 @@ export function sharedSummary(data,today=new Date().toISOString().slice(0,10)){
  prepaid+=funds;const remaining=lots.reduce((a,x)=>a+x.remaining,0),visits=events.filter(x=>x.kind==='visit').length;
  return {charged:round(charged),paid:round(paid),due:round(Math.max(0,charged-paid)),prepaid:round(prepaid),remaining,visits,until,active:!!until&&today<until,lots};
 }
+export function noticeText(d,actor,b={}){
+ const service=d.terms?.name||'Запись',who=actor?.name||'Telegram',rub=n=>new Intl.NumberFormat('ru-RU').format(n)+' ₽',day=x=>new Intl.DateTimeFormat('ru-RU',{day:'numeric',month:'short',timeZone:'UTC'}).format(new Date(x+'T12:00:00Z'));
+ const label=e=>(e.kind==='purchase'?(e.type==='period'?'начало абонемента':'начало пакета'):e.kind==='payment'?'оплата '+rub(e.amount):e.kind==='visit'?'посещение':'возврат посещения')+' · '+day(e.date);
+ const e=d.events?.find(x=>x.id===b.eventId);let body;
+ if(b.action==='accept')body=d.client?.id===actor?.id?'Приглашение принято: '+who:'Запрос принят: '+who;
+ else if(b.action==='offer')body='Новые условия от '+who+'. Посмотрите.';
+ else if(b.action==='activate')body='Условия подтверждены: '+who;
+ else if(b.action==='close')body='Связь завершена: '+who;
+ else if(e&&b.action==='confirm')body='Подтверждено: '+label(e);
+ else if(e&&b.action==='reject')body='Отклонено: '+label(e);
+ else if(e)body=who+': '+label(e)+'\nПодтвердите, если всё верно.';
+ else body='Есть изменения. Посмотрите.';
+ return service+'\n'+body;
+}
 export function transition(data,actor,body,today=new Date().toISOString().slice(0,10)){
  const d=structuredClone(data),provider=d.provider?.id===actor.id,client=d.client?.id===actor.id;if(!provider&&!client)fail('forbidden',403);
  if(d.closed)fail('connection_closed',409);
@@ -78,7 +92,7 @@ const update=env.DB.prepare('UPDATE shared_records SET provider_id = ?, client_i
 const TEST_DATA_CUTOFF=1792665615095;
 let testDataCleanupDone=false;
 export async function sharedRoute(request,env,defer=null,transport=fetch){
- const url=new URL(request.url);if(!url.pathname.startsWith('/api/shared/'))return null;const notify=(data,id,actor)=>{const other=data.provider?.id===actor.id?data.client:data.provider;if(!other||!defer)return;const task=transport('https://api.telegram.org/bot'+env.TELEGRAM_BOT_TOKEN+'/sendMessage',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({chat_id:Number(other.id),text:(data.terms?.name||'Запись')+' · обновление',reply_markup:{inline_keyboard:[[{text:'Открыть',web_app:{url:'https://moi-zapisi-mobile.queeny-inna.chatgpt.site/?record='+encodeURIComponent(id)}}]]}})}).catch(()=>{});try{defer(task)}catch{}};
+ const url=new URL(request.url);if(!url.pathname.startsWith('/api/shared/'))return null;const notify=(data,id,actor,b)=>{const other=data.provider?.id===actor.id?data.client:data.provider;if(!other||!defer)return;const task=transport('https://api.telegram.org/bot'+env.TELEGRAM_BOT_TOKEN+'/sendMessage',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({chat_id:Number(other.id),text:noticeText(data,actor,b),reply_markup:{inline_keyboard:[[{text:'Открыть',web_app:{url:'https://moi-zapisi-mobile.queeny-inna.chatgpt.site/?record='+encodeURIComponent(id)}}]]}})}).catch(()=>{});try{defer(task)}catch{}};
  try{
   if(!env.DB)fail('storage_unavailable',503);
   if(!testDataCleanupDone){await env.DB.prepare('DELETE FROM shared_records WHERE updated_at <= ?').bind(TEST_DATA_CUTOFF).run();await env.DB.prepare('DELETE FROM shared_records WHERE id = ?').bind('1c187dc6-b1ba-4ae1-af61-8dfe2c044287').run();await env.DB.prepare('DELETE FROM contact_picks WHERE expires_at <= ?').bind(TEST_DATA_CUTOFF+300000).run();testDataCleanupDone=true;}
@@ -113,12 +127,12 @@ export async function sharedRoute(request,env,defer=null,transport=fetch){
    if(row.expires_at<Date.now())fail('invite_expired',410);if(d.provider&&d.client)fail('invite_used',409);
    if(path==='preview'){const from=d.provider||d.client;return sj({invitation:{version:row.version,from:{name:from.name,username:from.username||'',photo_url:telegramPhoto(from.photo_url)},role:d.provider?'client':'provider',terms:d.terms,services:d.terms?[d.terms,...(d.additionalTerms||[]).map(x=>x.terms)]:[]}})}
    if(b.confirmTerms===true&&b.expectedVersion!==row.version)fail('conflict',409);if(!d.provider)d.provider=actor;else{d.client=actor;if(b.confirmTerms===true&&d.state==='offered'&&d.terms)d.state='active'}
-   const saved=await persistSharedConnection(env,row,d,true);notify(d,row.id,actor);return sj(saved);
+   const saved=await persistSharedConnection(env,row,d,true);notify(d,row.id,actor,{action:'accept'});return sj(saved);
   }
   if(path==='change'&&request.method==='POST'){
    const row=await env.DB.prepare('SELECT * FROM shared_records WHERE id = ? AND (provider_id = ? OR client_id = ?)').bind(b.id||'',actor.id,actor.id).first();if(!row)fail('not_found',404);
    const current=JSON.parse(row.data),prior=current.events.find(e=>e.id===b.eventId);if(prior&&((['confirm','reject'].includes(b.action)&&prior.resolvedBy===actor.id&&prior.status===(b.action==='confirm'?'confirmed':'rejected'))||(prior.actor===actor.id&&prior.kind===b.action&&prior.date===b.date)))return sj({record:publicRecord(row)});if(!Number.isInteger(b.version)||row.version!==b.version)fail('conflict',409);
-   const offset=Number.isInteger(b.timezoneOffset)&&b.timezoneOffset>=-840&&b.timezoneOffset<=720?b.timezoneOffset:0,localToday=new Date(Date.now()-offset*60000).toISOString().slice(0,10);const d=transition(JSON.parse(row.data),actor,b,localToday),saved=await persistSharedConnection(env,row,d,b.action==='activate');notify(d,row.id,actor);return sj(saved);
+   const offset=Number.isInteger(b.timezoneOffset)&&b.timezoneOffset>=-840&&b.timezoneOffset<=720?b.timezoneOffset:0,localToday=new Date(Date.now()-offset*60000).toISOString().slice(0,10);const d=transition(JSON.parse(row.data),actor,b,localToday),saved=await persistSharedConnection(env,row,d,b.action==='activate');notify(d,row.id,actor,b);return sj(saved);
   }
   fail('not_found',404);
  }catch(e){return sj({error:e.status?e.message:'storage_error'},e.status||503)}
