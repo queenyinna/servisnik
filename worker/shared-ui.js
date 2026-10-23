@@ -97,7 +97,7 @@ function contactPickerButton(onPicked){
 async function pickTelegramContact(button,onPicked){
  if(button.disabled||!canPickTelegramContact())return;button.disabled=true;button.setAttribute('aria-busy','true');let done=false,timer;
  const finish=()=>{if(done)return false;done=true;clearTimeout(timer);button.disabled=false;button.setAttribute('aria-busy','false');return true};
- try{await flushDraft();const prepared=await contactPickAPI('prepare','POST');
+ try{const prepared=await contactPickAPI('prepare','POST');
  timer=setTimeout(()=>{if(finish())showToast('Выбор не завершён. Можно повторить.')},90000);
  tg.requestChat(prepared.buttonId,async selected=>{
   if(done)return;if(!selected){finish();return}
@@ -107,3 +107,4 @@ async function pickTelegramContact(button,onPicked){
  }catch{if(finish())showToast('Выбор недоступен. Введи @username вручную.',false,'error')}
 }
 function applySetupContact(w,person){if(setupState!==w||$('setup').hidden||w.step!==1)return;if(!w.providerName.trim())w.providerName=person.name;w.contact=person.username?'@'+person.username:'';w.channel=person.username?'Telegram':'';renderSetupFields();setupChanged();if(!person.username)showToast('У контакта нет @username. Введи телефон или ссылку.')}
+
