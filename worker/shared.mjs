@@ -114,7 +114,7 @@ export async function sharedRoute(request,env,defer=null,transport=fetch){
   }
   if(path==='prepare-share'&&request.method==='POST'){
    if(typeof b.token!=='string'||!/^[a-f0-9]{48}$/.test(b.token))fail('invalid_invite');const row=await env.DB.prepare('SELECT * FROM shared_records WHERE token_hash = ? AND creator_id = ?').bind(await hashToken(b.token),actor.id).first();if(!row)fail('not_found',404);const data=JSON.parse(row.data);if(data.closed||data.provider&&data.client)fail('invite_used',409);if(row.expires_at<Date.now())fail('invite_expired',410);
-   const link='https://t.me/servisnik_bot?start='+b.token,result={type:'article',id:crypto.randomUUID(),title:'Приглашение в Сервисник',input_message_content:{message_text:invitationMessage(data)+'\n\n'+link},reply_markup:{inline_keyboard:[[{text:'Открыть приглашение',url:link}]]}};
+   const link='https://t.me/servisnik_bot?start='+b.token,result={type:'article',id:crypto.randomUUID(),title:'Приглашение в Сервисник',input_message_content:{message_text:invitationMessage(data)},reply_markup:{inline_keyboard:[[{text:'Открыть приглашение',url:link}]]}};
    let r;try{r=await transport('https://api.telegram.org/bot'+env.TELEGRAM_BOT_TOKEN+'/savePreparedInlineMessage',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({user_id:Number(actor.id),result,allow_user_chats:true,allow_bot_chats:false,allow_group_chats:false,allow_channel_chats:false}),signal:AbortSignal.timeout(10000)});const prepared=await r.json();if(!r.ok||!prepared.ok||!prepared.result?.id)fail('share_unavailable',502);return sj({preparedMessageId:prepared.result.id})}catch{fail('share_unavailable',502)}
   }
   if(path==='link'&&request.method==='POST'){
