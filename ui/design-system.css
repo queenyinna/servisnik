@@ -149,3 +149,5 @@ body .offer-pick strong{font-size:16px;font-weight:600}
 body .offer-pick.on{border-color:var(--ui-ink)}
 body .offer-tick{width:26px;height:26px;border-radius:50%;border:1.5px solid #c8c8cc;display:grid;place-items:center;font-size:14px;flex:none}
 body .offer-pick.on .offer-tick{background:var(--ui-ink);border-color:var(--ui-ink);color:#fff}
+/* Save stays in place; faded until something changes */
+body:not(.write-locked) .primary:disabled{opacity:.35;cursor:default}
