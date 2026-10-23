@@ -158,3 +158,4 @@ body .invite-from strong{font-size:18px;font-weight:600}
 body .invite-offer{padding:16px;margin:0 0 10px}
 body .invite-offer h3{margin:0 0 4px;font-size:18px}
 body .invite-offer p{margin:0}
+body #confirmMessage{white-space:pre-line}
