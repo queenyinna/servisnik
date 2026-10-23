@@ -24,4 +24,5 @@ Goal: launch a lean MVP Telegram Mini App fast. Planning and shared records, not
 - Replies: short and numbered. Linear: short English.
 - Run broad tests only when asked.
 - Report clearly: implemented / published / verified.
+- Branches: only `main` and `preview`. Work on `preview`; never create other branches.
 - Edit `worker/shared-ui.js` for the shared UI, then run `node scripts/build-bot.mjs`.
