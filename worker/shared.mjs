@@ -45,7 +45,7 @@ export function noticeText(d,actor,b={}){
  const label=e=>(e.kind==='purchase'?(e.type==='period'?'начало абонемента':'начало пакета'):e.kind==='payment'?'оплата '+rub(e.amount):e.kind==='visit'?'посещение':'возврат посещения')+' · '+day(e.date);
  const e=d.events?.find(x=>x.id===b.eventId);let body;
  if(b.action==='accept')body='🎉 '+who+' теперь с тобой в Сервиснике';
- else if(b.action==='offer')body=d.state==='active'?'🎉 '+who+' на связи! Твои услуги уже здесь 👇':'✏️ Новые условия от '+who+'. Загляни.';
+ else if(b.action==='offer')body=d.state==='active'?who+' добавил(-а) твои услуги! Загляни и спланируй занятия ✨':'✏️ Новые условия от '+who+'. Загляни.';
  else if(b.action==='activate')body='✅ Условия подтверждены: '+who;
  else if(b.action==='close')body=who+' больше не ведёт с тобой записи. История осталась 📁';
  else if(e&&b.action==='confirm')body='✅ Подтверждено: '+label(e);
