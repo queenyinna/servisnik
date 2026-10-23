@@ -1,0 +1,18 @@
+import assert from 'node:assert/strict';
+import {botRoute} from '../worker/bot.mjs';
+const origin='https://moi-zapisi-mobile.queeny-inna.chatgpt.site',token='123:test-only',key='test-admin',env={TELEGRAM_BOT_TOKEN:token,BOT_SETUP_KEY:key};
+const secret=Buffer.from(await crypto.subtle.digest('SHA-256',new TextEncoder().encode('telegram-webhook:'+token))).toString('hex');
+const req=(path,body={},headers={})=>new Request(origin+path,{method:'POST',headers:{'Content-Type':'application/json',...headers},body:JSON.stringify(body)});
+assert.equal((await botRoute(req('/telegram/webhook'),{})).status,503);
+assert.equal((await botRoute(req('/telegram/webhook'),env)).status,401);
+assert.equal((await botRoute(req('/api/bot/configure'),env)).status,401);
+const headers={'X-Telegram-Bot-Api-Secret-Token':secret};
+const start=await (await botRoute(req('/telegram/webhook',{message:{chat:{id:1,type:'private'},text:'/start'}},headers),env)).json();
+assert.equal(start.method,'sendMessage');assert.equal(start.reply_markup.inline_keyboard[0][0].web_app.url,origin+'/');
+for(const m of [{chat:{id:1,type:'group'},text:'/start'},{chat:{id:1,type:'private'},text:'hello'}])assert.equal((await (await botRoute(req('/telegram/webhook',{message:m},headers),env)).json()).method,undefined);
+let calls=[];const transport=async(url,init)=>{calls.push({method:url.split('/').at(-1),body:JSON.parse(init.body)});return Response.json({ok:true,result:calls.length===1?{username:'servisnik_bot'}:true})};
+assert.equal((await botRoute(req('/api/bot/configure',{}, {Authorization:'Bearer '+key}),env,transport)).status,200);assert.deepEqual(calls.map(x=>x.method),['getMe','setWebhook','setChatMenuButton','getWebhookInfo']);assert.equal(calls[1].body.secret_token,secret);assert.equal(calls[1].body.drop_pending_updates,false);
+assert.equal((await botRoute(req('/api/bot/configure',{}, {Authorization:'Bearer '+key}),env,async()=>Response.json({ok:true,result:{username:'wrong_bot'}}))).status,409);
+console.log('PASS bot: secret authorization; private /start; launch button; ignored unrelated updates; correct bot check; protected setup; webhook/menu configuration; no pending-update deletion. Mock API only.');
+const deep=await (await botRoute(req('/telegram/webhook',{message:{chat:{id:1,type:'private'},text:'/start '+ 'a'.repeat(48)}},headers),env)).json();assert.equal(deep.reply_markup.inline_keyboard[0][0].web_app.url,origin+'/?invite='+'a'.repeat(48));
+console.log('PASS bot /start forwards validated invitation token to Mini App; no untrusted redirect.');

@@ -1,0 +1,21 @@
+const a=require('assert'),{sandbox}=require('./qa.cjs');
+const pack={id:1,name:'Тренировки',entityType:'service',paymentType:'package',contractAmount:24000,packageCount:8,remaining:2,isPaid:true,singlePrice:3500,date:'2026-10-14T19:00',recurring:true,frequency:'weekly',weekdays:[3,5]};
+(async()=>{
+ const h=await sandbox([pack]);const c=h.c;
+ let r=c.visitResult(pack);a.equal(r.remaining,1);a.equal(r.visits[0].amount,3000);a(r.visits[0].covered);
+ r=c.visitResult(pack,new Date('2026-10-14T12:00:00+03:00'),true);a.equal(r.remaining,2);a.equal(r.visits[0].amount,3500);a(!r.visits[0].covered);
+ r=c.visitResult({...pack,remaining:0});a.equal(r.remaining,0);a.equal(r.visits[0].amount,3500);a(!r.visits[0].covered);
+ a.equal(c.packageValue({...pack,singlePrice:9000}),6000);
+ a.equal(c.forecast({...pack,remaining:0}).due,c.forecast({...pack,remaining:0}).n*3500);
+ a.equal(await c.buyPackage(1,10000,4,'2026-10-14'),true);
+ let current=h.read().find(x=>x.id===1);a.equal(c.packageRemaining(current),6);a.equal(c.packageValue(current),16000);a.equal(current.contractAmount,24000);
+ a.equal(await c.buyPackage(1,-10,4),false);a.equal(await c.buyPackage(1,10000,0),false);a.equal(await c.buyPackage(1,10000,2.5),false);
+ r=c.visitResult({...current,remaining:0});a.equal(r.packages[0].left,3);a.equal(r.visits.at(-1).amount,2500);a.equal(r.visits.at(-1).packId,current.packages[0].id);
+ a.equal(await c.commit([r]),true);a.equal(await c.undoVisit(1,r.visits.at(-1).id),true);current=h.read().find(x=>x.id===1);a.equal(current.packages[0].left,4);a.equal(c.packageValue(current),10000);
+ let exhausted={...pack,remaining:0,forecastEnabled:false};a.equal(c.expenseSummary([exhausted]).due,0);
+ let attended=c.visitResult(exhausted,new Date('2026-10-14T12:00:00+03:00'),true);a.equal(c.expenseSummary([attended]).due,3500);
+ a.equal(await c.commit([exhausted]),true);a.equal(await c.toggleForecast(1),true);let included=c.expenseSummary(h.read()).due;a(included>0);a.equal(c.expenseSummary(h.read()).due,included);a.equal(await c.toggleForecast(1),true);a.equal(c.expenseSummary(h.read()).due,0);
+ const saved={...pack,remaining:2};a.equal(await c.commit([saved]),true);c.openEditor(1);a(h.$('contractAmount').disabled);a(h.$('packageCount').disabled);h.$('singlePrice').value='5000';h.$('contractAmount').value='32000';a.equal(await c.save(),true);current=h.read().find(x=>x.id===1);a.equal(current.contractAmount,24000);a.equal(current.singlePrice,5000);a.equal(c.packageValue(current),6000);
+ const card=h.$('cards').querySelector('.home-service');a.equal(card.querySelector('.service-due'),null);a.equal(card.querySelector('.home-service-settings'),null);card.querySelector('.home-service-summary').onclick();a.equal(h.$('editor').hidden,false);
+ console.log('PASS mixed payments: package/single prices; explicit single keeps credit; exhausted credit never negative; immutable purchase price; additional pack FIFO and undo; invalid purchases blocked; opt-in forecast with real debt retained; no duplicated forecast; accessible settings gear');
+})().catch(e=>{console.error(e);process.exitCode=1});

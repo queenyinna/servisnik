@@ -1,0 +1,20 @@
+const a=require('assert'),{sandbox}=require('./qa.cjs');
+const s={id:1,name:'Тренировки',groupName:'Антон',paymentType:'visit',price:3000,balance:2,balanceUnitPrice:3000,recurring:true,frequency:'weekly',weekdays:[2],date:'2026-10-20',dateHasTime:false};
+const text=n=>n.textContent+n.children.map(text).join(' '),prevent={preventDefault(){}};
+(async()=>{
+ const h=await sandbox([s]);h.c.openBudgetPlan();const row=()=>h.$('planServices').children[0];a(h.$('budgetDay').closest('.plan-cycle'));a(!h.$('budgetDay').closest('.plan-settings'));
+ await h.c.togglePlanService(1);a(text(row()).includes('Не в плане'));a(row().querySelector('.plan-counter').hidden);a(!text(row()).includes('Дополнить'));await h.c.flushPlanUpdates();a.equal(h.read()[0].budgetPeriods['2026-10-01'],false);a.equal(h.read()[0].balance,2);
+ await h.c.togglePlanService(1);await h.c.flushPlanUpdates();let writes=0;const original=h.c.window.Telegram.WebApp.CloudStorage.setItem;h.c.window.Telegram.WebApp.CloudStorage.setItem=(...args)=>{if(args[0]==='mz_index_v1')writes++;return original(...args)};
+ await h.c.changePlanCount(1,1);await h.c.changePlanCount(1,1);await h.c.changePlanCount(1,1);a.equal(writes,0);a.equal(h.c.planServiceData(h.run('services[0]')).count,3);await h.fireTimers(600);a.equal(writes,1);a.equal(h.read()[0].budgetCounts['2026-10-01'],3);a.equal(h.read()[0].balance,2);
+ h.$('planSpan').value='3';h.$('planSpan').onchange();const prior=JSON.stringify(h.read()[0].budgetCounts);a.equal(await h.c.changePlanCount(1,1),false);a.equal(JSON.stringify(h.read()[0].budgetCounts),prior);a(!row().querySelector('.plan-month-counts').hidden);const parts=h.c.planServiceData(h.run('services[0]')).parts;await h.c.changePlanCount(1,1,parts[1].key);await h.c.flushPlanUpdates();a.equal(h.read()[0].budgetCounts[parts[1].key],parts[1].count+1);a.equal(h.read()[0].budgetCounts[parts[2].key],undefined);
+ // Amount and name are one native button; the switch is a separate sibling.
+ a(row().querySelector('.plan-row-open').querySelector('b'));a.equal(row().querySelector('.plan-switch').parentElement,row().querySelector('.plan-row-open').parentElement);
+ let form=row().querySelector('form'),price=form.querySelector('input');price.value='9999';price.oninput();await h.fireTimers(180);const reload=await sandbox([],{cloud:h.cloud});a(!reload.$('info').hidden);a.equal(reload.$('planServices').children[0].querySelector('input').value,'9999');a.equal(reload.read()[0].price,3000);
+ // A custom interval must be a valid option in the real select and survive price-only edits.
+ const c=await sandbox([{...s,balance:0,frequency:'custom',intervalEvery:5,intervalUnit:'days'}]);c.c.openBudgetPlan();form=c.$('planServices').children[0].querySelector('form');const repeat=form.querySelector('select');a(repeat.children.some(o=>o.value==='custom'));price=form.querySelector('input');price.value='3100';price.oninput();await form.onsubmit(prevent);a.equal(c.read()[0].frequency,'custom');a.equal(c.read()[0].intervalEvery,5);a.equal(c.read()[0].intervalUnit,'days');
+ // Failed batch remains visible, retry persists one intention without touching prepaid money.
+ const f=await sandbox([s]);f.c.openBudgetPlan();f.fail();await f.c.changePlanCount(1,1);a.equal(await f.c.flushPlanUpdates(),false);a.equal(f.read()[0].budgetCounts,undefined);a(!f.$('planError').hidden);a(!f.$('planRetry').hidden);a.equal(f.c.planServiceData(f.run('services[0]')).count,1);f.fail(false);await f.$('planRetry').onclick();a.equal(f.read()[0].budgetCounts['2026-10-01'],1);a.equal(f.read()[0].balance,2);
+ // Closing before debounce flushes pending changes instead of losing them.
+ await f.c.changePlanCount(1,1);await f.c.finishPlanClose();a(f.$('info').hidden);a.equal(f.read()[0].budgetCounts['2026-10-01'],2);
+ console.log('PASS planning regressions: off state, visible cycle, full-row target, batched writes, explicit quarter month, durable draft reload, custom recurrence, failed write/retry, close flush, prepaid invariance');
+})().catch(e=>{console.error(e);process.exitCode=1});

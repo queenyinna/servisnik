@@ -1,0 +1,182 @@
+[
+  {
+    "file": "tests/bidirectional-swipe.cjs",
+    "ok": true,
+    "output": "PASS right swipe: attendance uses existing balance logic; no repeated attendance button; failed save preserves credits; vertical scrolling does not reveal action\n"
+  },
+  {
+    "file": "tests/bot.mjs",
+    "ok": true,
+    "output": "PASS bot: secret authorization; private /start; launch button; ignored unrelated updates; correct bot check; protected setup; webhook/menu configuration; no pending-update deletion. Mock API only.\nPASS bot /start forwards validated invitation token to Mini App; no untrusted redirect.\n"
+  },
+  {
+    "file": "tests/browser-review.cjs",
+    "ok": true,
+    "output": "PASS browser review: no login, seeded test data, isolated personal/cloud data, attendance, plan, reload, draft, save failure, empty state, official Telegram SDK present; browser fallback isolated\n"
+  },
+  {
+    "file": "tests/budget-plan-regressions.cjs",
+    "ok": true,
+    "output": "PASS planning regressions: off state, visible cycle, full-row target, batched writes, explicit quarter month, durable draft reload, custom recurrence, failed write/retry, close flush, prepaid invariance\n"
+  },
+  {
+    "file": "tests/budget-plan.cjs",
+    "ok": true,
+    "output": "PASS budget plan: navigation, visible chart, real balances, per-service toggles, persistent quantities, reload, quarter renewal cash, salary day/calendar clamp, invalid month, inline edit, zero vs unknown, failed save/retry, retained form on close, paid-price snapshot, empty state\n"
+  },
+  {
+    "file": "tests/cloud.cjs",
+    "ok": true,
+    "output": "PASS: account isolation, restoration on another device, browser access gate, confirmed migration with legacy preserved, Unicode chunks, failed partial writes, stale-device conflict, corrupted/missing snapshots, capacity limit, concurrent-click protection\n"
+  },
+  {
+    "file": "tests/delete-cleanup.cjs",
+    "ok": true,
+    "output": "PASS service deletion: cloud, visible cards, purchase drafts, restore and reload\nPASS provider deletion: no stale DOM, data or back-navigation resurrection\nPASS failed deletion: retained visibly, error shown, never claims success\n"
+  },
+  {
+    "file": "tests/dialogs-and-purchases.cjs",
+    "ok": true,
+    "output": "PASS dialog cancel/X/Escape releases inert; custom membership purchase preserves prior term; fresh package has no duplicated remaining input; started package accepts explicit remaining count\n"
+  },
+  {
+    "file": "tests/final-main.cjs",
+    "ok": true,
+    "output": "PASS final main: approved headings; hidden clutter; current prepaid battery; remaining dues; direct service opening without accordion or settings button; specialist/settings routes; zero state; gym term value\n"
+  },
+  {
+    "file": "tests/home-delete.cjs",
+    "ok": true,
+    "output": "PASS home/delete: services only; no main action buttons; compact money block; empty specialists in directory; direct service actions; hidden service-editor delete; swipe reveal + undo restores financial balance; failed swipe delete; last service/empty provider/cascade; cancellation; failed cloud write; reload; no orphan resurrection\n"
+  },
+  {
+    "file": "tests/invitation-ux.cjs",
+    "ok": true,
+    "output": "PASS invitation UX DOM: named inviter/offer; explicit accept; native share success/cancel callback; fallback includes introduction; busy state clears.\n"
+  },
+  {
+    "file": "tests/mixed-payments.cjs",
+    "ok": true,
+    "output": "PASS mixed payments: package/single prices; explicit single keeps credit; exhausted credit never negative; immutable purchase price; additional pack FIFO and undo; invalid purchases blocked; opt-in forecast with real debt retained; no duplicated forecast; accessible settings gear\n"
+  },
+  {
+    "file": "tests/mvp-expenses.cjs",
+    "ok": true,
+    "output": "PASS MVP money: monthly plan/paid/due; attended unpaid remains due; payment and reversal; package allocation without double charge; package undo preserves payment; timed gym pass; historical debt snapshots; cloud failure\n"
+  },
+  {
+    "file": "tests/mvp-setup.cjs",
+    "ok": true,
+    "output": "PASS MVP setup: three steps; multiple services; package calculation; schedule per service; atomic save; inherited contact/place; no duplicate specialist; immediate message action; back/close restores layer; drafts; cloud failure preserves form\n"
+  },
+  {
+    "file": "tests/package-price-separation.cjs",
+    "ok": true,
+    "output": "PASS package price separation: unknown ≠ package unit; no auto-fill on unrelated save; unknown forecast flagged; unpriced single visit blocked; explicit/free price respected; paid pack credit retains immutable unit price; scoped border reset and keyboard focus style present (CSS source check, not browser)\n"
+  },
+  {
+    "file": "tests/payment-visibility.cjs",
+    "ok": true,
+    "output": "PASS payment visibility: unscheduled quote is not debt; incomplete totals marked; unpaid package and gym visible; provider and global sums; paid package balance preserved; quantity; mixed data; future dates; weekly schedule; future membership\n"
+  },
+  {
+    "file": "tests/provider-flow.cjs",
+    "ok": true,
+    "output": "PASS: provider-first creation with contact/place; empty profile never becomes a service; prices/schedule only on children; total 9000+6000=15000; blank old Anton corrected; legacy payments/history kept on real services\n"
+  },
+  {
+    "file": "tests/providers.cjs",
+    "ok": true,
+    "output": "PASS: specialist is not a service; 9000+6000 combined balance; visit/undo adjusts total; shared contact editing; missing-price state; empty specialist remains usable; confirmed migration preserves history and backup; populated target is never overwritten\n"
+  },
+  {
+    "file": "tests/purchase-flow.cjs",
+    "ok": true,
+    "output": "PASS purchase flow: package quote prefills, edited purchase creates independent paid lot, balance reflects both lots, membership uses its own term and quote\n"
+  },
+  {
+    "file": "tests/qa-lifecycle.cjs",
+    "ok": true,
+    "output": "{\"id\":\"drafts:2\",\"status\":\"passed\"}\n{\"id\":\"drafts:4\",\"status\":\"passed\"}\n{\"id\":\"drafts:7\",\"status\":\"passed\"}\n{\"id\":\"drafts:9\",\"status\":\"passed\"}\n{\"id\":\"drafts:10\",\"status\":\"passed\"}\n{\"id\":\"drafts:11\",\"status\":\"passed\"}\n{\"id\":\"drafts:12\",\"status\":\"passed\"}\n{\"id\":\"drafts:13\",\"status\":\"passed\"}\n{\"id\":\"drafts:16\",\"status\":\"passed\"}\n{\"id\":\"cloud:7\",\"status\":\"passed\"}\n{\"id\":\"cloud:8\",\"status\":\"passed\"}\n{\"id\":\"cloud:9\",\"status\":\"passed\"}\n{\"id\":\"cloud:10\",\"status\":\"passed\"}\n{\"id\":\"cloud:11\",\"status\":\"passed\"}\n{\"id\":\"cloud:12\",\"status\":\"passed\"}\n{\"id\":\"notifications_navigation:1\",\"status\":\"passed\"}\n{\"id\":\"notifications_navigation:2\",\"status\":\"passed\"}\n{\"id\":\"notifications_navigation:4\",\"status\":\"passed\"}\n{\"id\":\"notifications_navigation:7\",\"status\":\"passed\"}\n{\"id\":\"notifications_navigation:16\",\"status\":\"passed\"}\n{\"id\":\"notifications_navigation:17\",\"status\":\"passed\"}\n{\"id\":\"notifications_navigation:21\",\"status\":\"passed\"}\n{\"id\":\"notifications_navigation:22\",\"status\":\"passed\"}\n{\"id\":\"deletion_import:1\",\"status\":\"passed\"}\n{\"id\":\"deletion_import:2\",\"status\":\"passed\"}\n{\"id\":\"deletion_import:12\",\"status\":\"passed\"}\n{\"id\":\"setup-close-preserves-reopen\",\"status\":\"passed\"}\n{\"id\":\"setup-close-failure-stays-open\",\"status\":\"passed\"}\n{\"id\":\"setup-save-reopen-no-ghost\",\"status\":\"passed\"}\n{\"id\":\"setup-save-failure-retry-once\",\"status\":\"passed\"}\n{\"id\":\"quick-cross-saves-draft\",\"status\":\"passed\"}\n{\"id\":\"quick-failure-does-not-close\",\"status\":\"passed\"}\n{\"id\":\"quick-to-editor-one-active-form\",\"status\":\"passed\"}\n{\"id\":\"setup-back-during-save-blocked\",\"status\":\"passed\"}\n{\"id\":\"undo-rebase-keeps-correct-dirty-state\",\"status\":\"passed\"}\n{\"id\":\"term-paid-total-and-credit-remain-immutable\",\"status\":\"passed\"}\n{\"id\":\"strict-calendar-date\",\"status\":\"passed\"}\n{\"id\":\"slow-write-blur-lock-and-release\",\"status\":\"passed\"}\n{\"id\":\"failed-delete-unblurs-and-keeps-data\",\"status\":\"passed\"}\n{\"id\":\"draft-close-shows-progress-and-unblocks\",\"status\":\"passed\"}\n{\"id\":\"native-close-warning-only-for-unsaved-work\",\"status\":\"passed\"}\n41/41 model checks passed\n"
+  },
+  {
+    "file": "tests/qa-regressions.cjs",
+    "ok": true,
+    "output": "ull}\n{\"id\":\"E08\",\"title\":\"Archived active term shows its own expiry after next membership is bought\",\"status\":\"passed\",\"evidence\":{\"label\":\"28 дн. · до 10 нояб.\",\"remaining\":28}}\n{\"id\":\"E09\",\"title\":\"Future unpaid package outside selected month is not counted in that month\",\"status\":\"passed\",\"evidence\":null}\n{\"id\":\"E10\",\"title\":\"Using a single visit from an old prepaid balance must retain purchase price\",\"status\":\"passed\",\"evidence\":null}\n{\"id\":\"E11\",\"title\":\"Changing per-visit price on bought-pack service must use displayed quote\",\"status\":\"passed\",\"evidence\":null}\n{\"id\":\"E12\",\"title\":\"Imported invalid numeric credit is rejected rather than stored\",\"status\":\"passed\",\"evidence\":null}\n{\"id\":\"E13\",\"title\":\"Unknown visit amount cannot be marked paid as zero\",\"status\":\"passed\",\"evidence\":null}\n{\"id\":\"E14\",\"title\":\"Explicit zero standalone visit price remains valid\",\"status\":\"passed\",\"evidence\":null}\n{\"id\":\"E15\",\"title\":\"Failure to save attendance leaves balance and history intact\",\"status\":\"passed\",\"evidence\":null}\n{\"id\":\"E16\",\"title\":\"Deleting service removes all package/term history without affecting another provider\",\"status\":\"passed\",\"evidence\":null}\n{\"id\":\"E17\",\"title\":\"Absent messenger contact must not create a dead button\",\"status\":\"passed\",\"evidence\":null}\n{\"id\":\"E18\",\"title\":\"Technical settings remain unreachable in the visible settings screen\",\"status\":\"passed\",\"evidence\":null}\n{\"id\":\"E20\",\"title\":\"Main save must preserve explicit free price and package snapshot\",\"status\":\"passed\",\"evidence\":null}\n{\"id\":\"E21\",\"title\":\"Blank standalone price must remain unknown, not become a free visit\",\"status\":\"passed\",\"evidence\":null}\n{\"id\":\"E22\",\"title\":\"Closed purchase form must not reopen after unrelated render\",\"status\":\"passed\",\"evidence\":null}\n{\"id\":\"E23\",\"title\":\"Switching provider must not capture the prior provider purchase draft\",\"status\":\"passed\",\"evidence\":null}\n{\"id\":\"E24\",\"title\":\"Specialist service settings gear and swipe delete update balances with undo\",\"status\":\"passed\",\"evidence\":\"Gear opens service settings directly; swipe reveals a separate trash control; undo restores the service and recomputes totals.\"}\n{\"id\":\"E25\",\"title\":\"Service totals are not repeated as count badges\",\"status\":\"passed\",\"evidence\":\"Main and provider service count badges removed; package visit counts retained.\"}\n{\"id\":\"E26\",\"title\":\"Telegram contact copy tip is concise and visible in setup\",\"status\":\"passed\",\"evidence\":\"Exact approved helper copy is rendered in step one.\"}\n"
+  },
+  {
+    "file": "tests/qa.cjs",
+    "ok": true,
+    "output": "1 PASS_MODEL Только название \n2 PASS_MODEL Пустое название/пробелы \n3 PARTIAL Длинное название \n4 PASS_MODEL Пропустить контакт \n5 PASS_MODEL Быстрая форма → детали \n6 PASS_MODEL Закрыть несохранённое создание \n7 PASS_MODEL Сохранить и добавить ещё \n8 PASS_MODEL Маникюр+педикюр в группе \n9 PASS_MODEL Добавление внутри группы \n10 PASS_MODEL Копируются контакты, не платежи \n11 PASS_MODEL Общие контакты обновляются \n12 PASS_MODEL Удаление одной услуги \n13 PASS_MODEL Одна услуга в группе \n14 PASS_MODEL Одинаковые названия разных мастеров \n15 PASS_MODEL Разовая цена 2500 \n16 PASS_MODEL Цена × количество \n17 PASS_MODEL Количество и повторение без дубля \n18 PASS_MODEL Нулевая цена \n19 PASS_MODEL Отрицательное/дробное количество \n20 PASS_MODEL Пакет 24000/8 \n21 PASS_MODEL Остаток 3/8 \n22 PASS_MODEL Остаток больше пакета \n23 PASS_MODEL Нулевой пакет не уходит в минус \n24 PASS_MODEL Неоплаченный пакет \n25 PASS_MODEL Оплата прошлого месяца \n26 PASS_MODEL Зал 13000/2 месяца \n27 PASS_MODEL Срок 11 сен → 10 ноя \n28 PASS_MODEL Оплата не равна началу \n29 PASS_MODEL Нет начала срока \n30 PASS_MODEL Начало = дата оплаты \n31 PASS_MODEL Абонемент будущего периода \n32 PASS_MODEL Абонемент закончился \n33 PASS_MODEL Продление включено/выключено \n34 PASS_MODEL 31 января → короткий месяц \n35 PASS_MODEL Разовая ближайшая запись \n36 PASS_MODEL Пн/Ср без начальной даты \n37 PASS_MODEL Нет времени \n38 PASS_MODEL Только 2 раза/нед \n39 PASS_MODEL Раз в 3 недели \n40 PASS_MODEL Разные повторения общего салона \n41 PASS_MODEL Отметить пакет и обновить запись \n42 PASS_MODEL Отметить зал, срок неизменен \n43 PASS_MODEL Разовое посещение не значит оплата \n44 PASS_MODEL Двойное нажатие и отмена \n45 PASS_MODEL Бюджет 1-е/15-е \n46 PASS_MODEL Общая батарея 0–100% \n47 PARTIAL Написать рядом с отметкой \n48 PASS_MODEL Изменения, сохранение и выход \n49 PASS_MODEL Перезагрузка и ошибка хранения \n50 NOT_TESTED iPhone/Telegram: клавиатура, даты, прокрутка, навигация \n{\"PASS_MODEL\":47,\"PARTIAL\":2,\"NOT_TESTED\":1}\n"
+  },
+  {
+    "file": "tests/save-behavior.cjs",
+    "ok": true,
+    "output": "PASS save behavior: single-price dirty detection; save and leave warning; package draft restoration; independent dismissible undo; persistent inline save error and retry; frozen controls and blocked duplicate save while writing\n"
+  },
+  {
+    "file": "tests/selection-and-setup.cjs",
+    "ok": true,
+    "output": "PASS DOM model: plan exclusion removes chart, empty axis, reinclude, real balance unchanged, concise visit/package setup, removed intro/settings\n"
+  },
+  {
+    "file": "tests/settings-navigation.cjs",
+    "ok": true,
+    "output": "PASS settings: planning-only entry; footer removed; repeated close/back; directory return; editor suspension; CSS layer source check, not device\n"
+  },
+  {
+    "file": "tests/setup-dates.cjs",
+    "ok": true,
+    "output": "PASS dates step: no price calendars, payment/start distinction, back retains dates, duration, skip schedule preserves paid membership\n"
+  },
+  {
+    "file": "tests/shared-ui.cjs",
+    "ok": true,
+    "output": "PASS shared UI DOM model: linked cards; private data separate; budget on/off removes chart without changing credits; profile/form back and X; confirmed response; network failure unlocks and retains state.\n"
+  },
+  {
+    "file": "tests/shared.mjs",
+    "ok": true,
+    "output": "PASS 63 shared checks: real SQLite migration + D1 adapter; signed two-account requests; one-use/expired/revoked invites; private records; terms; package/one-off/period; no self confirmation; payments; exact-once confirmations; visits/returns; conflicts; failures. No real Telegram API/device.\nPASS total 71 shared assertions including link rotation, future term start and partial payment.\nPASS total 83 shared assertions including invitation preview, privacy, one-step acceptance and price-change protection.\nPASS total 92 shared assertions including authorized native message preparation; no real Telegram calls.\n"
+  },
+  {
+    "file": "tests/simple-schedule.cjs",
+    "ok": true,
+    "output": "PASS simple schedule: visible date/repeat, conditional interval, date retained, draft reload, monthly save, no setup budget preview or implicit inclusion\n"
+  },
+  {
+    "file": "tests/specialist-connections.cjs",
+    "ok": true,
+    "output": "PASS specialist connections: home→specialist→price/schedule→save; contact routing; isolated services and sums; old/new package values; attendance/undo; group-form restore; zero-state hiding; real debt independent from planning; term renewal preserves historical price/payment and current coverage\n"
+  },
+  {
+    "file": "tests/tariff-display.cjs",
+    "ok": true,
+    "output": "PASS paid pack\nPASS unpaid pack\nPASS pack plus single\nPASS free single plus pack\nPASS free pack\nPASS unknown pack\nPASS gym\nPASS free term\nPASS unknown term\nPASS single\nPASS free single\nPASS unknown single\nPASS pack edit/save/reload: amount and credit unchanged, no inferred single price\n"
+  },
+  {
+    "file": "tests/telegram-live-mode.cjs",
+    "ok": true,
+    "output": "PASS Telegram/browser separation: no sample clients, no fabricated income in Telegram, clean private account; missing SDK fails visibly instead of opening demo; browser demo preserved. DOM model.\n"
+  },
+  {
+    "file": "tests/telegram-profile.cjs",
+    "ok": true,
+    "output": "PASS Telegram header: real supplied identity; name/username; avatar initials; unsafe photo URL rejected; no fabricated profile outside Telegram; plus icon. DOM model only.\n"
+  },
+  {
+    "file": "tests/ux-drafts.cjs",
+    "ok": true,
+    "output": "PASS: contact guide flushes draft before minimize; quick and payment/schedule drafts restored; confirmed save clears draft; account isolation; visible top add button; inherited parent contact; empty balance hidden; parent name in form/next record; notification cross; storage failures never claim draft saved\n"
+  },
+  {
+    "file": "tests/weekday-times.cjs",
+    "ok": true,
+    "output": "PASS per-day times: setup draft/reload/save, timed next visit, elapsed visit, blank time, completed date, legacy shared time, editor edit/draft reload, removed footer noise\n"
+  },
+  {
+    "file": "tests/workspace.cjs",
+    "ok": true,
+    "output": "PASS dual workspace: default personal; accessible tabs; isolated work prices; zero price; failed save retains input; draft survives reload; edit/delete do not alter personal payments or credit\n"
+  }
+]

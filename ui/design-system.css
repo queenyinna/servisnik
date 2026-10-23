@@ -1,0 +1,138 @@
+/* Shared primitives. Page styles own layout only; change component appearance here. */
+:root{
+ --ui-ink:#191919;--ui-muted:#737377;--ui-surface:#fff;--ui-soft:#ededf0;
+ --ui-glass:rgba(241,241,244,.96);--ui-line:rgba(255,255,255,.8);
+ --ui-radius-control:16px;--ui-radius-card:22px;--ui-radius-dialog:24px;
+ --ui-touch:48px;--ui-glass-shadow:0 18px 55px #0003;
+}
+body .primary,body .secondary,#sharedDetail a.primary,#sharedDetail a.secondary,#sharedDetail .shared-copy,body .shared-actions button{
+ display:flex;align-items:center;justify-content:center;gap:8px;min-height:var(--ui-touch);
+ padding:12px 18px;border:0;border-radius:var(--ui-radius-control);font:inherit;font-size:15px;
+ line-height:1.35;font-weight:600;text-align:center;text-decoration:none;touch-action:manipulation;
+}
+body .primary,#sharedDetail a.primary,body .shared-actions .primary{background:var(--ui-ink);color:#fff}
+body .secondary,#sharedDetail a.secondary,#sharedDetail .shared-copy,body .shared-actions .secondary{background:var(--ui-soft);color:var(--ui-ink);font-weight:500}
+body :is(.back,.close-button,.quick-close,.settings-button,.gear,.directory-button,.toast-close){
+ display:inline-flex;align-items:center;justify-content:center;flex-shrink:0;
+ min-width:44px;min-height:44px;padding:0;line-height:1;border:0;
+}
+body :is(.back,.close-button,.quick-close,.settings-button,.gear,.directory-button,.toast-close) svg{display:block;flex:none;width:20px;height:20px}
+body :is(.payment-card,.setup-service,.work-form){border-radius:var(--ui-radius-card)}
+body :is(.confirm-panel,.quick-panel,.leave-panel,.write-feedback-card),body .shared-busy span{
+ color:var(--ui-ink);background:var(--ui-glass);border:1px solid var(--ui-line);
+ border-radius:var(--ui-radius-dialog);box-shadow:var(--ui-glass-shadow);
+ backdrop-filter:blur(14px);-webkit-backdrop-filter:blur(14px);
+}
+body .toast,body .toast[role=alert],body .undo-notice{
+ position:fixed;top:calc(var(--view-top,0px) + var(--view-height,100dvh)/2);bottom:auto;
+ left:50%;transform:translate(-50%,-50%);width:min(calc(100% - 32px),360px);
+ min-height:64px;display:flex;align-items:center;gap:12px;padding:12px 14px;
+ background:var(--ui-glass);color:var(--ui-ink);border:1px solid var(--ui-line);
+ border-radius:var(--ui-radius-control);box-shadow:var(--ui-glass-shadow);
+ backdrop-filter:blur(14px);-webkit-backdrop-filter:blur(14px);z-index:110;font-size:14px;line-height:1.4;
+}
+body .toast .toast-close{width:44px;height:44px;background:transparent;color:var(--ui-muted)}
+body .invite-welcome{text-align:center;padding:16px 8px 24px}
+body .invite-avatar{width:64px;height:64px;margin:0 auto 16px;border-radius:var(--ui-radius-card);background:var(--ui-soft);display:flex;align-items:center;justify-content:center;color:var(--ui-ink);font-size:23px;font-weight:600}
+body .invite-welcome h2{font-size:24px;line-height:1.2;margin:0 0 12px}
+body .invite-welcome p,body .invite-intro{font-size:15px;line-height:1.5;color:var(--ui-muted);margin:0 0 20px}
+body .invite-welcome p{margin:0}
+body .invite-price{display:block;font-size:22px;margin-top:8px}
+body .invite-privacy,body .invite-expiry{text-align:center;line-height:1.5;margin:14px 0;color:var(--ui-muted)}
+body .invite-privacy{font-size:12px}
+
+/* Workspace entry and profile identity use neutral surfaces, never finance widgets. */
+body .header-line{display:flex;align-items:center;gap:12px}
+body .header-line h1{flex:1;min-width:0;font-size:26px;letter-spacing:-1px}
+body .specialist-entry{display:inline-flex;align-items:center;justify-content:center;gap:7px;min-height:48px;padding:8px 10px;background:transparent;color:var(--ui-muted);border:0;border-radius:14px;font-size:12px;line-height:1.25;max-width:125px;text-align:left;flex-shrink:0}
+body .specialist-entry svg,body #specialistBack svg{width:20px;height:20px;flex:none;fill:none;stroke:currentColor;stroke-width:1.7;stroke-linecap:round;stroke-linejoin:round}
+body .shared-hero{background:transparent;color:var(--ui-ink);border:0;border-radius:0;padding:4px 0 20px;margin:0 0 20px;border-bottom:1px solid #e5e5e8}
+body .shared-hero h2{font-size:25px;margin:0 0 16px}
+body .shared-hero p{color:var(--ui-muted);font-size:15px;margin:8px 0}
+body .shared-hero strong{display:block;font-size:21px;margin-top:8px}
+@media(max-width:360px){body .header-line{gap:8px}body .header-line h1{font-size:24px}body .specialist-entry{max-width:108px;padding:8px 4px}}
+
+body .specialist-hero{background:transparent;color:var(--ui-ink);border-radius:0;padding:4px 0 20px;border-bottom:1px solid #e5e5e8}
+body .specialist-edit{background:var(--ui-soft);color:var(--ui-ink);display:flex;align-items:center;justify-content:center;border:0}
+body .specialist-bottom,body .specialist-bottom a{color:var(--ui-muted)}
+
+body .work-tabs{margin:20px 0 18px;width:100%}
+body #workServicesPanel .catalog-wrap{display:block;margin:0}
+body #workServicesPanel .catalog{width:100%;padding:0;border:0;background:transparent}
+body #workServicesPanel .catalog-add{position:static;align-self:flex-end;flex:none}
+
+/* One header row and the same toolbar for both specialist lists. */
+body .header-line .telegram-profile{flex:1;margin:0;min-width:0;overflow:hidden}
+body .header-line .telegram-identity strong,body .header-line .telegram-identity span{white-space:nowrap;overflow:hidden;text-overflow:ellipsis;overflow-wrap:normal}
+body .header-line .specialist-entry{margin-left:auto}
+body .list-toolbar .icon-action{background:var(--ui-ink);color:#fff;border:0;position:static;flex:none;margin:0;padding:0;width:48px;height:48px;min-width:48px;border-radius:15px;display:flex;align-items:center;justify-content:center}
+body .list-toolbar .icon-action svg{display:block;width:22px;height:22px;fill:none;stroke:currentColor;stroke-width:1.7;stroke-linecap:round}
+
+/* Segmented control: shared by every pair of peer views. */
+body .workspace-tabs{display:flex;gap:4px;min-width:0;padding:4px;background:#e9e9ec;border-radius:17px}
+body .workspace-tab,body #workView .workspace-tab{flex:1;min-width:0;min-height:48px;padding:9px 8px;border:0;border-radius:13px;background:transparent;color:var(--ui-muted);font-size:15px;font-weight:600;line-height:1.35;white-space:nowrap}
+body .workspace-tab[aria-selected=true],body #workView .workspace-tab[aria-selected=true]{background:var(--ui-surface);color:var(--ui-ink);box-shadow:0 1px 5px #0000000c}
+body .list-toolbar{display:flex;align-items:center;justify-content:flex-end;min-height:48px;margin:0 0 12px}
+
+/* Plan membership lives in the planner. */
+
+/* Canonical plan switch: use aria-checked for both visual and accessible state. */
+body .plan-switch{border:0;background:transparent;min-width:48px;min-height:48px;display:grid;place-items:center;padding:0}
+body .plan-switch i{width:42px;height:26px;border-radius:20px;background:#ddd;display:block;position:relative}
+body .plan-switch i:before{content:'';position:absolute;width:20px;height:20px;background:white;border-radius:50%;top:3px;left:3px}
+body .plan-switch[aria-checked=true] i{background:#202020}
+body .plan-switch[aria-checked=true] i:before{left:19px}
+
+body .contact-picker{width:100%;margin:0 0 14px}
+body .contact-picker[aria-busy=true]{opacity:.65;cursor:wait}
+
+/* Keep contact actions grouped and separated from the next form field. */
+body .setup-contact-preview:empty{display:none}
+body .setup-contact-preview:not(:empty){display:flex;flex-direction:column;align-items:flex-start;gap:12px;margin:0 0 20px}
+body .setup-contact-preview .choice-row{width:100%;margin:0}
+body .setup-contact-preview .contact-link{margin:0;min-height:48px;display:inline-flex;align-items:center;justify-content:center}
+body .setup-contact-preview .hint{margin:0}
+
+/* Shared swipe actions: one 88px reveal, inset controls, no full-swipe mutation. */
+body .ui-swipe{position:relative;overflow:hidden;isolation:isolate;border-radius:22px;touch-action:pan-y}
+body .ui-swipe .swipe-face{position:relative;z-index:2;width:100%;flex:none;transition:transform .2s ease;border-radius:22px;background:var(--ui-surface)}
+body .ui-swipe .client-swipe-action,body #workView .ui-swipe .client-swipe-action{position:absolute;top:6px;bottom:6px;inset-block:6px;width:80px;min-height:44px;padding:8px 4px;z-index:1;border:0;border-radius:16px;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:7px;font-size:11px;line-height:1.2;font-weight:500;opacity:0;visibility:hidden;pointer-events:none}
+body .ui-swipe .client-delete,body #workView .ui-swipe .client-delete{right:0;background:#f4e1e1;color:#932f35}
+body .ui-swipe .client-attend,body #workView .ui-swipe .client-attend{left:0;background:#e1eee4;color:#336749}
+body .ui-swipe .client-swipe-action svg{display:block;width:21px;height:21px;flex:none;fill:none;stroke:currentColor;stroke-width:1.7;stroke-linecap:round;stroke-linejoin:round}
+body .ui-swipe[data-action=delete] .client-delete,body .ui-swipe[data-action=attend] .client-attend,body .ui-swipe.swipe-hint .client-swipe-action,body #workView .ui-swipe[data-action=delete] .client-delete,body #workView .ui-swipe[data-action=attend] .client-attend,body #workView .ui-swipe.swipe-hint .client-swipe-action{opacity:1;visibility:visible;pointer-events:auto}
+body .ui-swipe.swipe-hint .client-swipe-action{pointer-events:none}
+body .ui-swipe.swipe-dragging .swipe-face{transition:none}
+body .service-delete-icon{display:inline-flex;align-items:center;justify-content:center;width:44px;min-width:44px;height:44px;padding:0;background:transparent;color:#8d4146;border:0;border-radius:14px}
+body .service-delete-icon svg{width:21px;height:21px;fill:none;stroke:currentColor;stroke-width:1.7;stroke-linecap:round;stroke-linejoin:round}
+@media(prefers-reduced-motion:reduce){body .ui-swipe .swipe-face{transition:none}}
+
+/* One financial summary component in both workspaces. */
+body .finance-widget,body #workView .finance-widget{background:var(--ui-ink);color:#fff;border:0;border-radius:26px;padding:20px;margin-top:0;cursor:pointer}
+body .finance-widget .finance-header,body #workView .finance-widget .finance-header{display:flex;align-items:center;justify-content:space-between;gap:12px;padding:0;margin:0 0 24px;min-height:44px}
+body .finance-widget .finance-header h2,body #workView .finance-widget .finance-header h2{flex:1;margin:0;color:#fff;font-size:20px;font-weight:600;line-height:1.25;letter-spacing:-.5px}
+body .finance-widget .plan-open{font:inherit;color:inherit;text-align:left}
+body .finance-widget :is(.settings-button,.gear),body #workView .finance-widget .gear{width:44px;height:44px;min-width:44px;flex:0 0 44px;padding:0;background:#ffffff16;color:#fff;border:0;border-radius:14px}
+body .finance-widget :is(.settings-button,.gear) svg{width:20px;height:20px;stroke:currentColor;fill:none;stroke-width:1.7}
+body .finance-widget .finance-values,body #workView .finance-widget .finance-values{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:14px;padding:0}
+body .finance-widget .finance-values>div{min-width:0}
+body .finance-widget .finance-values :is(.small,.label),body #workView .finance-widget .label{display:block;margin:0 0 8px;font-size:12px;font-weight:400;line-height:1.4;color:#b9b9c0}
+body .finance-widget .finance-values :is(strong,.number),body #workView .finance-widget .number{display:block;margin:0;color:#fff;font-size:clamp(22px,6vw,30px);font-weight:600;line-height:1.2;letter-spacing:-.8px;font-variant-numeric:tabular-nums;white-space:normal;overflow-wrap:anywhere}
+body .finance-widget .finance-values>div:last-child :is(strong,.number),body #workView .finance-widget .expected .number{color:#b9b9c0}
+body .finance-widget .finance-battery,body #workView .finance-widget .finance-battery{display:flex;align-items:center;gap:4px;margin:24px 0 0;padding:0}
+body .finance-widget .finance-battery :is(.battery-body,.track),body #workView .finance-widget .track{display:flex;flex:1;height:16px;border:0;border-radius:5px;background:#505054;padding:0;gap:0;overflow:hidden}
+body .finance-widget .finance-battery :is(.home-paid-fill,.home-unpaid-fill,.filled),body #workView .finance-widget .filled{height:16px;border-radius:4px}
+body .finance-widget :is(.home-paid-fill,.filled){background:#f6f6f7}
+body .finance-widget .home-unpaid-fill{background:#505054}
+body .finance-widget .finance-battery .tip,body #workView .finance-widget .tip{width:3px;height:8px;background:#707075;border-radius:2px;flex:none}
+body #incomePeriodHost{margin-bottom:20px}
+body #incomePeriodHost select{width:100%;min-width:0;min-height:48px;background:var(--ui-surface);color:var(--ui-ink);border:1px solid #ddd;border-radius:var(--ui-radius-control);padding:12px;font:inherit;color-scheme:light}
+
+/* Telegram identity: a single image/initials fallback everywhere. */
+body .person-avatar{position:relative;display:inline-flex!important;align-items:center;justify-content:center;flex:0 0 44px;width:44px;height:44px;margin:0!important;overflow:hidden;border-radius:50%;background:var(--ui-soft);color:var(--ui-ink);font-size:15px!important;font-weight:600;line-height:1}
+body .person-avatar img{display:block;width:100%;height:100%;object-fit:cover}
+body .person-identity{display:flex;align-items:center;gap:10px;min-width:0}
+body .shared-service .service-open>div{min-width:0}
+body .shared-service .service-open{align-items:center}
+body .person-avatar-large{width:64px;height:64px;flex-basis:64px;font-size:23px!important;margin:0 auto 16px!important}
+body .invite-welcome>.person-avatar{display:flex!important}

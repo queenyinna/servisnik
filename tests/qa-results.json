@@ -1,0 +1,305 @@
+{
+  "environment": "DOM model + deterministic clock, not browser",
+  "results": [
+    {
+      "id": 1,
+      "title": "Только название",
+      "status": "PASS_MODEL",
+      "limit": ""
+    },
+    {
+      "id": 2,
+      "title": "Пустое название/пробелы",
+      "status": "PASS_MODEL",
+      "limit": ""
+    },
+    {
+      "id": 3,
+      "title": "Длинное название",
+      "status": "PARTIAL",
+      "limit": "Данные/DOM проверены, мобильная вёрстка не проверена"
+    },
+    {
+      "id": 4,
+      "title": "Пропустить контакт",
+      "status": "PASS_MODEL",
+      "limit": ""
+    },
+    {
+      "id": 5,
+      "title": "Быстрая форма → детали",
+      "status": "PASS_MODEL",
+      "limit": ""
+    },
+    {
+      "id": 6,
+      "title": "Закрыть несохранённое создание",
+      "status": "PASS_MODEL",
+      "limit": ""
+    },
+    {
+      "id": 7,
+      "title": "Сохранить и добавить ещё",
+      "status": "PASS_MODEL",
+      "limit": ""
+    },
+    {
+      "id": 8,
+      "title": "Маникюр+педикюр в группе",
+      "status": "PASS_MODEL",
+      "limit": ""
+    },
+    {
+      "id": 9,
+      "title": "Добавление внутри группы",
+      "status": "PASS_MODEL",
+      "limit": ""
+    },
+    {
+      "id": 10,
+      "title": "Копируются контакты, не платежи",
+      "status": "PASS_MODEL",
+      "limit": ""
+    },
+    {
+      "id": 11,
+      "title": "Общие контакты обновляются",
+      "status": "PASS_MODEL",
+      "limit": ""
+    },
+    {
+      "id": 12,
+      "title": "Удаление одной услуги",
+      "status": "PASS_MODEL",
+      "limit": ""
+    },
+    {
+      "id": 13,
+      "title": "Одна услуга в группе",
+      "status": "PASS_MODEL",
+      "limit": ""
+    },
+    {
+      "id": 14,
+      "title": "Одинаковые названия разных мастеров",
+      "status": "PASS_MODEL",
+      "limit": ""
+    },
+    {
+      "id": 15,
+      "title": "Разовая цена 2500",
+      "status": "PASS_MODEL",
+      "limit": ""
+    },
+    {
+      "id": 16,
+      "title": "Цена × количество",
+      "status": "PASS_MODEL",
+      "limit": ""
+    },
+    {
+      "id": 17,
+      "title": "Количество и повторение без дубля",
+      "status": "PASS_MODEL",
+      "limit": ""
+    },
+    {
+      "id": 18,
+      "title": "Нулевая цена",
+      "status": "PASS_MODEL",
+      "limit": ""
+    },
+    {
+      "id": 19,
+      "title": "Отрицательное/дробное количество",
+      "status": "PASS_MODEL",
+      "limit": ""
+    },
+    {
+      "id": 20,
+      "title": "Пакет 24000/8",
+      "status": "PASS_MODEL",
+      "limit": ""
+    },
+    {
+      "id": 21,
+      "title": "Остаток 3/8",
+      "status": "PASS_MODEL",
+      "limit": ""
+    },
+    {
+      "id": 22,
+      "title": "Остаток больше пакета",
+      "status": "PASS_MODEL",
+      "limit": ""
+    },
+    {
+      "id": 23,
+      "title": "Нулевой пакет не уходит в минус",
+      "status": "PASS_MODEL",
+      "limit": ""
+    },
+    {
+      "id": 24,
+      "title": "Неоплаченный пакет",
+      "status": "PASS_MODEL",
+      "limit": ""
+    },
+    {
+      "id": 25,
+      "title": "Оплата прошлого месяца",
+      "status": "PASS_MODEL",
+      "limit": ""
+    },
+    {
+      "id": 26,
+      "title": "Зал 13000/2 месяца",
+      "status": "PASS_MODEL",
+      "limit": ""
+    },
+    {
+      "id": 27,
+      "title": "Срок 11 сен → 10 ноя",
+      "status": "PASS_MODEL",
+      "limit": ""
+    },
+    {
+      "id": 28,
+      "title": "Оплата не равна началу",
+      "status": "PASS_MODEL",
+      "limit": ""
+    },
+    {
+      "id": 29,
+      "title": "Нет начала срока",
+      "status": "PASS_MODEL",
+      "limit": ""
+    },
+    {
+      "id": 30,
+      "title": "Начало = дата оплаты",
+      "status": "PASS_MODEL",
+      "limit": ""
+    },
+    {
+      "id": 31,
+      "title": "Абонемент будущего периода",
+      "status": "PASS_MODEL",
+      "limit": ""
+    },
+    {
+      "id": 32,
+      "title": "Абонемент закончился",
+      "status": "PASS_MODEL",
+      "limit": ""
+    },
+    {
+      "id": 33,
+      "title": "Продление включено/выключено",
+      "status": "PASS_MODEL",
+      "limit": ""
+    },
+    {
+      "id": 34,
+      "title": "31 января → короткий месяц",
+      "status": "PASS_MODEL",
+      "limit": ""
+    },
+    {
+      "id": 35,
+      "title": "Разовая ближайшая запись",
+      "status": "PASS_MODEL",
+      "limit": ""
+    },
+    {
+      "id": 36,
+      "title": "Пн/Ср без начальной даты",
+      "status": "PASS_MODEL",
+      "limit": ""
+    },
+    {
+      "id": 37,
+      "title": "Нет времени",
+      "status": "PASS_MODEL",
+      "limit": ""
+    },
+    {
+      "id": 38,
+      "title": "Только 2 раза/нед",
+      "status": "PASS_MODEL",
+      "limit": ""
+    },
+    {
+      "id": 39,
+      "title": "Раз в 3 недели",
+      "status": "PASS_MODEL",
+      "limit": ""
+    },
+    {
+      "id": 40,
+      "title": "Разные повторения общего салона",
+      "status": "PASS_MODEL",
+      "limit": ""
+    },
+    {
+      "id": 41,
+      "title": "Отметить пакет и обновить запись",
+      "status": "PASS_MODEL",
+      "limit": ""
+    },
+    {
+      "id": 42,
+      "title": "Отметить зал, срок неизменен",
+      "status": "PASS_MODEL",
+      "limit": ""
+    },
+    {
+      "id": 43,
+      "title": "Разовое посещение не значит оплата",
+      "status": "PASS_MODEL",
+      "limit": ""
+    },
+    {
+      "id": 44,
+      "title": "Двойное нажатие и отмена",
+      "status": "PASS_MODEL",
+      "limit": ""
+    },
+    {
+      "id": 45,
+      "title": "Бюджет 1-е/15-е",
+      "status": "PASS_MODEL",
+      "limit": ""
+    },
+    {
+      "id": 46,
+      "title": "Общая батарея 0–100%",
+      "status": "PASS_MODEL",
+      "limit": ""
+    },
+    {
+      "id": 47,
+      "title": "Написать рядом с отметкой",
+      "status": "PARTIAL",
+      "limit": "Ссылки и расположение в DOM проверены; реальное открытие приложений не проверено"
+    },
+    {
+      "id": 48,
+      "title": "Изменения, сохранение и выход",
+      "status": "PASS_MODEL",
+      "limit": ""
+    },
+    {
+      "id": 49,
+      "title": "Перезагрузка и ошибка хранения",
+      "status": "PASS_MODEL",
+      "limit": ""
+    },
+    {
+      "id": 50,
+      "title": "iPhone/Telegram: клавиатура, даты, прокрутка, навигация",
+      "status": "NOT_TESTED",
+      "limit": "Нет физического устройства или поддерживаемого браузерного тестирования"
+    }
+  ]
+}
