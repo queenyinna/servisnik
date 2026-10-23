@@ -140,3 +140,4 @@ body .invite-welcome>.person-avatar{display:flex!important}
 /* Specialist lists: plus sits on the tabs row, like «Мои записи» + */
 body #workView .work-tabs{width:calc(100% - 60px)}
 body #workView .list-toolbar{margin:-70px 0 22px}
+body .finance-widget .battery-caption{display:block;margin:8px 0 0;font-size:12px;color:#b9b9c0}
