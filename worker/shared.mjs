@@ -89,13 +89,13 @@ const update=env.DB.prepare('UPDATE shared_records SET provider_id = ?, client_i
  const record={id:row.id,version:row.version+1,...d,summary:sharedSummary(d)};return {record,records:[record,...children.map(x=>({...x,summary:sharedSummary(x)}))]};
 }
 // Owner-authorized pre-release cleanup. Fixed cutoff protects every new test record.
-const TEST_DATA_CUTOFF=1792665615095;
+const TEST_DATA_CUTOFF=1792753863075;
 let testDataCleanupDone=false;
 export async function sharedRoute(request,env,defer=null,transport=fetch){
  const url=new URL(request.url);if(!url.pathname.startsWith('/api/shared/'))return null;const notify=(data,id,actor,b)=>{const other=data.provider?.id===actor.id?data.client:data.provider;if(!other||!defer)return;const task=transport('https://api.telegram.org/bot'+env.TELEGRAM_BOT_TOKEN+'/sendMessage',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({chat_id:Number(other.id),text:noticeText(data,actor,b),reply_markup:{inline_keyboard:[[{text:'Открыть',web_app:{url:'https://moi-zapisi-mobile.queeny-inna.chatgpt.site/?record='+encodeURIComponent(id)}}]]}})}).catch(()=>{});try{defer(task)}catch{}};
  try{
   if(!env.DB)fail('storage_unavailable',503);
-  if(!testDataCleanupDone){await env.DB.prepare('DELETE FROM shared_records WHERE updated_at <= ?').bind(TEST_DATA_CUTOFF).run();await env.DB.prepare('DELETE FROM shared_records WHERE id = ?').bind('1c187dc6-b1ba-4ae1-af61-8dfe2c044287').run();await env.DB.prepare('DELETE FROM contact_picks WHERE expires_at <= ?').bind(TEST_DATA_CUTOFF+300000).run();testDataCleanupDone=true;}
+  if(!testDataCleanupDone){await env.DB.prepare('DELETE FROM shared_records WHERE updated_at <= ?').bind(TEST_DATA_CUTOFF).run();await env.DB.prepare('DELETE FROM shared_records WHERE id IN (?, ?)').bind('d112e88f-cdc7-41ae-a63f-c659bdbaa685','db80e2cc-e8fd-4ea2-812a-c93edcd5a9e6').run();await env.DB.prepare('DELETE FROM contact_picks WHERE expires_at <= ?').bind(TEST_DATA_CUTOFF+300000).run();testDataCleanupDone=true;}
   const actor=await authenticate(request.headers.get('X-Telegram-Init-Data'),env.TELEGRAM_BOT_TOKEN);
   if(!['GET','POST'].includes(request.method))fail('method_not_allowed',405);
   let b={};if(request.method==='POST'){const text=await request.text();if(text.length>32768)fail('payload_too_large',413);try{b=JSON.parse(text)}catch{fail('invalid_json')}if(!b||typeof b!=='object')fail('invalid_json')}
@@ -137,3 +137,4 @@ export async function sharedRoute(request,env,defer=null,transport=fetch){
   fail('not_found',404);
  }catch(e){return sj({error:e.status?e.message:'storage_error'},e.status||503)}
 }
+
