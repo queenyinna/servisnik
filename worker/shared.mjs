@@ -44,14 +44,14 @@ export function noticeText(d,actor,b={}){
  const service=d.terms?.name||'Запись',who=actor?.name||'Telegram',rub=n=>new Intl.NumberFormat('ru-RU').format(n)+' ₽',day=x=>new Intl.DateTimeFormat('ru-RU',{day:'numeric',month:'short',timeZone:'UTC'}).format(new Date(x+'T12:00:00Z'));
  const label=e=>(e.kind==='purchase'?(e.type==='period'?'начало абонемента':'начало пакета'):e.kind==='payment'?'оплата '+rub(e.amount):e.kind==='visit'?'посещение':'возврат посещения')+' · '+day(e.date);
  const e=d.events?.find(x=>x.id===b.eventId);let body;
- if(b.action==='accept')body=d.client?.id===actor?.id?'Приглашение принято: '+who:'Запрос принят: '+who;
- else if(b.action==='offer')body='Новые условия от '+who+'. Посмотрите.';
- else if(b.action==='activate')body='Условия подтверждены: '+who;
- else if(b.action==='close')body='Отключено: '+who;
- else if(e&&b.action==='confirm')body='Подтверждено: '+label(e);
- else if(e&&b.action==='reject')body='Отклонено: '+label(e);
- else if(e)body=who+': '+label(e)+'\nПодтвердите, если всё верно.';
- else body='Есть изменения. Посмотрите.';
+ if(b.action==='accept')body='🎉 '+who+' теперь с тобой в Сервиснике';
+ else if(b.action==='offer')body='✏️ Новые условия от '+who+'. Загляни.';
+ else if(b.action==='activate')body='✅ Условия подтверждены: '+who;
+ else if(b.action==='close')body=who+' больше не ведёт с тобой записи. История осталась 📁';
+ else if(e&&b.action==='confirm')body='✅ Подтверждено: '+label(e);
+ else if(e&&b.action==='reject')body='🤔 Не подтверждено: '+label(e)+'. Загляни, что не так.';
+ else if(e)body=who+': '+label(e)+'\nВсё так? Подтверди 👌';
+ else body='Есть новости 👀 Загляни.';
  return service+'\n'+body;
 }
 export function transition(data,actor,body,today=new Date().toISOString().slice(0,10)){
