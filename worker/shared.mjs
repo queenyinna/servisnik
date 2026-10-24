@@ -73,6 +73,8 @@ export function noticeText(d,actor,b={}){
  else body='Есть новости 👀 Загляни.';
  return service+'\n'+body;
 }
+// Local wall-clock time of the person who sent the request (from the app's timezone offset).
+const localNow=off=>new Date(Date.now()-(Number.isInteger(off)&&off>=-840&&off<=720?off:0)*60000).toISOString().slice(0,16);
 export function transition(data,actor,body,today=new Date().toISOString().slice(0,10)){
  const d=structuredClone(data),provider=d.provider?.id===actor.id,client=d.client?.id===actor.id;if(!provider&&!client)fail('forbidden',403);
  if(d.closed)fail('connection_closed',409);
@@ -83,23 +85,23 @@ export function transition(data,actor,body,today=new Date().toISOString().slice(
  const existing=d.events.find(x=>x.id===body.eventId);
  if(body.action==='confirm'||body.action==='reject'){
   if(!existing)fail('not_found',404);if(existing.actor===actor.id)fail('other_party_required',403);
-  const status=body.action==='confirm'?'confirmed':'rejected';if(existing.status===status)return d;if(existing.status!=='pending')fail('already_resolved',409);
+  const status=body.action==='confirm'?'confirmed':'rejected';if(existing.status===status)return d;if(existing.status!=='pending')fail('already_resolved',409);if(existing.kind==='move'&&status==='confirmed'){const now=localNow(existing.tz);if(existing.to<=now||existing.from&&existing.from.length>11&&existing.from<=now)fail('request_expired',409)}
   const auto=existing.kind==='visit'&&existing.lot?d.events.find(x=>x.id===existing.lot&&x.auto===existing.id&&x.status==='pending'):null;if(auto){auto.status=status;auto.resolvedBy=actor.id}if(status==='confirmed')validateEvent(d,existing,today);existing.status=status;existing.resolvedBy=actor.id;if(status==='confirmed'&&existing.kind==='schedule'){d.schedule=existing.schedule;d.scheduleEventId=existing.id}return d;
  }
  if(existing){if(existing.actor!==actor.id)fail('conflict',409);return d}
  if(body.action==='schedule'){
   if(typeof body.eventId!=='string'||!/^[a-zA-Z0-9_-]{12,80}$/.test(body.eventId))fail('invalid_id');if(d.events.length>=2000)fail('history_full',409);if(!dateOK(body.date)||body.date>today)fail('invalid_date');const schedule=scheduleTerms(body.schedule);for(const e of d.events)if(e.kind==='schedule'&&e.status==='pending'){e.status='rejected';e.resolvedBy=actor.id}d.events.push({id:body.eventId,actor:actor.id,status:'pending',kind:'schedule',date:body.date,schedule});return d;
  }
- if(body.action==='move'){if(typeof body.eventId!=='string'||!/^[a-zA-Z0-9_-]{12,80}$/.test(body.eventId))fail('invalid_id');if(d.events.length>=2000)fail('history_full',409);const to=typeof body.to==='string'?body.to:'';if(!/^\d{4}-\d{2}-\d{2}T([01]\d|2[0-3]):[0-5]\d$/.test(to)||!dateOK(to.slice(0,10))||to.slice(0,10)<today)fail('invalid_date');let counter=false;for(const x of d.events)if(x.kind==='move'&&x.status==='pending'){if(x.actor!==actor.id)counter=true;x.status='rejected';x.resolvedBy=actor.id}d.events.push({id:body.eventId,actor:actor.id,status:'pending',kind:'move',date:to.slice(0,10),to,from:typeof body.from==='string'&&/^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}$/.test(body.from)?body.from:d.terms?.date?d.terms.date+'T'+(d.terms.time||''):'',counter});return d}
+ if(body.action==='move'){if(typeof body.eventId!=='string'||!/^[a-zA-Z0-9_-]{12,80}$/.test(body.eventId))fail('invalid_id');if(d.events.length>=2000)fail('history_full',409);const to=typeof body.to==='string'?body.to:'';if(!/^\d{4}-\d{2}-\d{2}T([01]\d|2[0-3]):[0-5]\d$/.test(to)||!dateOK(to.slice(0,10))||to.slice(0,10)<today)fail('invalid_date');let counter=false;for(const x of d.events)if(x.kind==='move'&&x.status==='pending'){if(x.actor!==actor.id)counter=true;x.status='rejected';x.resolvedBy=actor.id}if(to<=localNow(body.timezoneOffset))fail('invalid_date');d.events.push({id:body.eventId,actor:actor.id,status:'pending',kind:'move',tz:Number.isInteger(body.timezoneOffset)?body.timezoneOffset:0,date:to.slice(0,10),to,from:typeof body.from==='string'&&/^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}$/.test(body.from)?body.from:d.terms?.date?d.terms.date+'T'+(d.terms.time||''):'',counter});return d}
  if(body.action==='cancel'){if(typeof body.eventId!=='string'||!/^[a-zA-Z0-9_-]{12,80}$/.test(body.eventId))fail('invalid_id');if(d.events.length>=2000)fail('history_full',409);const at=typeof body.at==='string'&&/^\d{4}-\d{2}-\d{2}T([01]\d|2[0-3]):[0-5]\d$/.test(body.at)?body.at:'';if(!at||!dateOK(at.slice(0,10))||at.slice(0,10)<today)fail('invalid_date');if(d.events.some(x=>x.kind==='cancel'&&x.at===at&&x.status==='confirmed'))fail('cancel_exists',409);
   // Only a client's cancel inside the free-cancel window is late; a specialist's cancel never charges the client.
-  const late=body.late===true&&d.client?.id===actor.id&&Number(d.terms?.cancelHours)>0,e={id:body.eventId,actor:actor.id,status:'confirmed',kind:'cancel',date:at.slice(0,10),at,late};
+  const hours=Number(d.terms?.cancelHours)||0,late=d.client?.id===actor.id&&hours>0&&Date.parse(at+':00Z')-Date.parse(localNow(body.timezoneOffset)+':00Z')<hours*3600000,e={id:body.eventId,actor:actor.id,status:'confirmed',kind:'cancel',date:at.slice(0,10),at,late};
   if(late&&d.terms?.paymentType==='package'){const s=sharedSummary(d,e.date),lot=s.lots.filter(x=>x.remaining>0).sort((a,b)=>d.events.find(p=>p.id===a.id).date.localeCompare(d.events.find(p=>p.id===b.id).date))[0];if(lot)e.lot=lot.id}
   for(const x of d.events)if(x.kind==='move'&&x.status==='pending'){x.status='rejected';x.resolvedBy=actor.id}d.events.push(e);return d}
  if(typeof body.eventId!=='string'||!/^[a-zA-Z0-9_-]{12,80}$/.test(body.eventId))fail('invalid_id');if(d.events.length>=2000)fail('history_full',409);
  if(!dateOK(body.date)||body.date>today)fail('invalid_date');
  const t=d.terms,s=sharedSummary(d,body.date);if((body.action==='purchase'||body.action==='visit'&&t.paymentType==='visit')&&t.amount===null)fail('price_required');let e={id:body.eventId,actor:actor.id,status:'pending',date:body.date,kind:body.action};
- if(body.action==='purchase'){
+ if(body.action==='purchase'){if(d.events.some(x=>x.kind==='purchase'&&x.status==='pending'))fail('purchase_pending',409);
   if(t.paymentType==='visit')fail('not_a_package');e={...e,type:t.paymentType,amount:t.amount,count:t.count,duration:t.duration};if(e.type==='period'){e.start=body.startDate||body.date;if(!dateOK(e.start))fail('invalid_date');e.end=termEnd(e.start,e.duration)}
  }else if(body.action==='payment'){if(!amountOK(body.amount)||body.amount<=0||body.amount>s.due)fail('invalid_payment');e.amount=body.amount;
  }else if(body.action==='visit'){
