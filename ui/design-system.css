@@ -204,3 +204,5 @@ body .history-row{display:flex;align-items:center;gap:12px;width:100%;padding:14
 body .history-row>div{display:grid;gap:2px;flex:1;min-width:0}
 body .history-row .status-pill{flex:none;padding:6px 10px;border-radius:12px;font-size:14px;font-weight:600;background:var(--ui-soft)}
 body .history-row .status-pill.status-wait{background:#e8edf6;color:#2f4f7a}body .history-row .status-pill.status-done{background:#e1eee4;color:#336749}body .history-row .status-pill.status-missed{background:#f1e6d8;color:#7a5420}body .history-row .status-pill.status-cancel{background:var(--ui-soft);color:var(--ui-muted)}
+body .cancel-chips{display:grid;grid-template-columns:repeat(4,1fr);gap:6px;margin:6px 0}
+body .cancel-chips .choice{min-height:44px}

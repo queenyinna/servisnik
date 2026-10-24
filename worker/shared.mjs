@@ -82,7 +82,7 @@ export function transition(data,actor,body,today=new Date().toISOString().slice(
  if(body.action==='confirm'||body.action==='reject'){
   if(!existing)fail('not_found',404);if(existing.actor===actor.id)fail('other_party_required',403);
   const status=body.action==='confirm'?'confirmed':'rejected';if(existing.status===status)return d;if(existing.status!=='pending')fail('already_resolved',409);
-  if(status==='confirmed')validateEvent(d,existing,today);existing.status=status;existing.resolvedBy=actor.id;if(status==='confirmed'&&existing.kind==='schedule'){d.schedule=existing.schedule;d.scheduleEventId=existing.id}return d;
+  const auto=existing.kind==='visit'&&existing.lot?d.events.find(x=>x.id===existing.lot&&x.auto===existing.id&&x.status==='pending'):null;if(auto){auto.status=status;auto.resolvedBy=actor.id}if(status==='confirmed')validateEvent(d,existing,today);existing.status=status;existing.resolvedBy=actor.id;if(status==='confirmed'&&existing.kind==='schedule'){d.schedule=existing.schedule;d.scheduleEventId=existing.id}return d;
  }
  if(existing){if(existing.actor!==actor.id)fail('conflict',409);return d}
  if(body.action==='schedule'){
@@ -102,12 +102,14 @@ export function transition(data,actor,body,today=new Date().toISOString().slice(
  }else if(body.action==='payment'){if(!amountOK(body.amount)||body.amount<=0||body.amount>s.due)fail('invalid_payment');e.amount=body.amount;
  }else if(body.action==='visit'){
   if(d.events.some(x=>x.kind==='visit'&&x.status!=='rejected'&&x.date===body.date&&!d.events.some(u=>u.kind==='undo'&&u.ref===x.id&&u.status==='confirmed')))fail('visit_exists',409);
+  // 2b: the first marked visit starts the pack (start date = that visit); it is confirmed together with the visit.
+  if(t.paymentType==='package'&&t.amount!==null&&!d.events.some(x=>x.kind==='purchase'&&x.status!=='rejected')){const p={id:body.eventId+'p',actor:actor.id,status:'pending',date:body.date,kind:'purchase',type:'package',amount:t.amount,count:t.count,duration:t.duration,auto:body.eventId};d.events.push(p);e.lot=p.id;e.amount=0;validateEvent(d,e,today,true);d.events.push(e);return d}
   const lot=s.lots.filter(x=>x.remaining>0&&d.events.find(p=>p.id===x.id).date<=body.date).sort((a,b)=>d.events.find(p=>p.id===a.id).date.localeCompare(d.events.find(p=>p.id===b.id).date))[0];if(lot){e.lot=lot.id;e.amount=0}else if(t.paymentType==='period'&&s.active){e.amount=0;e.period=s.until}else{const value=t.paymentType==='visit'?t.amount:t.singlePrice;if(value===null)fail(t.paymentType==='package'?'pack_empty':'period_expired',409);e.amount=value}
  }else if(body.action==='undo'){const v=d.events.find(x=>x.id===body.ref&&x.kind==='visit'&&x.status==='confirmed');if(!v||d.events.some(x=>x.kind==='undo'&&x.ref===v.id&&x.status!=='rejected'))fail('invalid_reversal',409);e.ref=v.id;
  }else fail('invalid_action');
  validateEvent(d,e,today);d.events.push(e);return d;
 }
-function validateEvent(d,e,today){const s=sharedSummary(d,e.date);if(e.kind==='payment'&&e.amount>s.due)fail('payment_exceeds_due',409);if(e.kind==='visit'&&e.lot&&!s.lots.some(x=>x.id===e.lot&&x.remaining>0&&d.events.find(p=>p.id===x.id).date<=e.date))fail('pack_empty',409)}
+function validateEvent(d,e,today,autoStart=false){if(autoStart)return;const s=sharedSummary(d,e.date);if(e.kind==='payment'&&e.amount>s.due)fail('payment_exceeds_due',409);if(e.kind==='visit'&&e.lot&&!s.lots.some(x=>x.id===e.lot&&x.remaining>0&&d.events.find(p=>p.id===x.id).date<=e.date))fail('pack_empty',409)}
 const APP='https://moi-zapisi-mobile.queeny-inna.chatgpt.site';
 export function noticeButtons(d,id,b){const open={text:'Открыть',web_app:{url:APP+'/?record='+encodeURIComponent(id)}},e=d.events?.find(x=>x.id===b.eventId),ok=e&&e.status==='pending'&&('y:'+e.id).length<=64;if(e&&e.kind==='cancel'&&b.action==='cancel'&&('k:'+e.id).length<=64)return [[{text:'Ничего страшного',callback_data:'k:'+e.id}]];if(ok&&b.action==='visit')return [[{text:'Да, было',callback_data:'y:'+e.id},{text:'Не было',callback_data:'n:'+e.id}]];if(ok&&b.action==='move')return [[{text:'Подходит',callback_data:'y:'+e.id},{text:'Другое',web_app:{url:APP+'/?record='+encodeURIComponent(id)+'&move=1'}}]];return [[open]]}
 export async function sendNotice(env,transport,data,id,actor,b){const other=data.provider?.id===actor.id?data.client:data.provider;if(!other)return;await transport('https://api.telegram.org/bot'+env.TELEGRAM_BOT_TOKEN+'/sendMessage',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({chat_id:Number(other.id),text:noticeText(data,actor,b),reply_markup:{inline_keyboard:noticeButtons(data,id,b)}})})}
