@@ -26,4 +26,5 @@ Goal: launch a lean MVP Telegram Mini App fast. Planning and shared records, not
 - Report clearly: implemented / published / verified.
 - After every UI change, re-capture and republish the flow page (current flow only): https://claude.ai/artifact/Ae14F9nTkcRkvF6LRvBfoW
 - Branches: only `main` and `preview`. Work on `preview`; never create other branches.
+- Never push (to `preview` or `main`) without Inna's clear approval for that push. Flow work = flow page only; no app code changes unless she says "in the app".
 - Edit `worker/shared-ui.js` for the shared UI, then run `node scripts/build-bot.mjs`.
