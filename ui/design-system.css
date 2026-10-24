@@ -167,3 +167,8 @@ body .start-choice strong{font-size:17px;font-weight:600}
 body .start-choice span{font-size:14px;color:var(--ui-muted);line-height:1.4}
 
 body .ui-swipe .client-delete.client-move,body #workView .ui-swipe .client-delete.client-move{background:#ececf0;color:#191919}
+body :is(.shared-service,.shared-client) .resource-battery{margin:8px 0 4px}
+body :is(.shared-service,.shared-client) .resource-shell{height:6px;border:0;border-radius:8px;background:#eee;padding:0}
+body :is(.shared-service,.shared-client) .resource-fill{height:6px;background:#222;border-radius:8px}
+body :is(.shared-service,.shared-client) .resource-tip{display:none}
+body #workView .shared-client .resource-tip{display:none}body #workView .shared-client .resource-shell{border:0;padding:0}
