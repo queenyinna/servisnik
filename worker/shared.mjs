@@ -29,7 +29,8 @@ function terms(raw){
  const duration=raw.paymentType==='period'?Number(raw.duration):null;if(duration!==null&&(!Number.isInteger(duration)||duration<1||duration>36))fail('invalid_duration');
  const singlePrice=raw.singlePrice===undefined||raw.singlePrice===null||raw.singlePrice===''?null:raw.singlePrice;if(singlePrice!==null&&!amountOK(singlePrice))fail('invalid_price');
  const date=raw.date||'';if(date&&!dateOK(date))fail('invalid_date');const time=raw.time||'';if(time&&!/^([01]\d|2[0-3]):[0-5]\d$/.test(time))fail('invalid_time');
- return {name:raw.name.trim(),paymentType:raw.paymentType,amount:price,count,duration,singlePrice,date,time};
+ const cancelHours=raw.cancelHours===undefined||raw.cancelHours===null||raw.cancelHours===''?0:Number(raw.cancelHours);if(!Number.isInteger(cancelHours)||cancelHours<0||cancelHours>168)fail('invalid_cancel_hours');
+ return {name:raw.name.trim(),paymentType:raw.paymentType,amount:price,count,duration,singlePrice,date,time,cancelHours};
 }
 function scheduleTerms(raw){
  if(!raw||typeof raw!=='object'||!['none','weekly','monthly'].includes(raw.frequency))fail('invalid_schedule');
@@ -45,7 +46,7 @@ function termEnd(start,months){const d=new Date(start+'T12:00:00Z'),day=d.getUTC
 export function sharedSummary(data,today=new Date().toISOString().slice(0,10)){
  const confirmed=data.events.filter(x=>x.status==='confirmed'&&x.date<=today),reversed=new Set(confirmed.filter(x=>x.kind==='undo').map(x=>x.ref)),events=confirmed.filter(x=>!reversed.has(x.id));
  let charged=0,paid=0;const lots=[],charges=[];let until='';
- for(const e of events){if(e.kind==='purchase'){charged+=e.amount;charges.push({id:e.id,amount:e.amount,type:e.type,start:e.start,end:e.end});if(e.type==='package')lots.push({id:e.id,count:e.count,remaining:e.count,amount:e.amount});if(e.type==='period'&&e.start<=today&&e.end>until)until=e.end}if(e.kind==='visit'){if(e.lot){const lot=lots.find(x=>x.id===e.lot);if(lot)lot.remaining=Math.max(0,lot.remaining-1)}else{charged+=e.amount;charges.push({id:e.id,amount:e.amount})}}if(e.kind==='payment')paid+=e.amount}
+ for(const e of events){if(e.kind==='purchase'){charged+=e.amount;charges.push({id:e.id,amount:e.amount,type:e.type,start:e.start,end:e.end});if(e.type==='package')lots.push({id:e.id,count:e.count,remaining:e.count,amount:e.amount});if(e.type==='period'&&e.start<=today&&e.end>until)until=e.end}if(e.kind==='visit'){if(e.lot){const lot=lots.find(x=>x.id===e.lot);if(lot)lot.remaining=Math.max(0,lot.remaining-1)}else{charged+=e.amount;charges.push({id:e.id,amount:e.amount})}}if(e.kind==='cancel'&&e.lot){const lot=lots.find(x=>x.id===e.lot);if(lot)lot.remaining=Math.max(0,lot.remaining-1)}if(e.kind==='payment')paid+=e.amount}
  let funds=paid,prepaid=0;for(const charge of charges){const covered=Math.min(funds,charge.amount),lot=lots.find(x=>x.id===charge.id);if(lot)prepaid+=Math.max(0,covered-(lot.count-lot.remaining)*(lot.amount/lot.count));if(charge.type==='period'){const start=Date.parse(charge.start),end=Date.parse(charge.end),used=Math.max(0,Math.min(1,(Date.parse(today)-start)/(end-start)));prepaid+=Math.max(0,covered-charge.amount*used)}funds=Math.max(0,funds-charge.amount)}
  prepaid+=funds;const remaining=lots.reduce((a,x)=>a+x.remaining,0),visits=events.filter(x=>x.kind==='visit').length;
  return {charged:round(charged),paid:round(paid),due:round(Math.max(0,charged-paid)),prepaid:round(prepaid),remaining,visits,until,active:!!until&&today<until,lots};
@@ -60,8 +61,9 @@ export function noticeText(d,actor,b={}){
  else if(b.action==='close')body=who+' больше не ведёт с тобой записи. История осталась 📁';
  else if(e?.kind==='schedule'&&b.action==='schedule')body=who+' предлагает расписание 📅\nПроверь в приложении и подтверди.';
  else if(e?.kind==='schedule'&&b.action==='confirm')body='Расписание подтверждено ✅';
- else if(e?.kind==='move'&&b.action==='confirm')body='Перенос подтверждён ✅ '+at(e.to);
- else if(e?.kind==='move'&&b.action==='move')body=e.counter?who+' предлагает другое время:\n'+at(e.to)+' 🤝':who+' просит перенести занятие:\n'+(e.from?at(e.from)+' → ':'')+at(e.to)+' ↻';
+ else if(e?.kind==='move'&&b.action==='confirm')body='Договорились ✅ '+at(e.to);
+ else if(e?.kind==='move'&&b.action==='move')body=who+': «Можно перенести? 🙏»\n'+(e.from?at(e.from)+' → ':'')+at(e.to);
+ else if(e?.kind==='cancel'&&b.action==='cancel')body=who+': «'+(d.client?.id===e.actor?'Ой, прости, не смогу прийти 🙏':'Прости, не получится 🙏')+'»\n'+at(e.at)+' — '+(e.late?'поздняя отмена, засчитано':'отменено');
  else if(e?.kind==='visit'&&b.action==='visit')body=who+' отметил(-а) занятие ✅\n'+at(e.date)+'. Всё верно?';
  else if(e&&b.action==='confirm')body='✅ Подтверждено: '+label(e);
  else if(e&&b.action==='reject')body='🤔 Не подтверждено: '+label(e)+'. Загляни, что не так.';
@@ -87,6 +89,11 @@ export function transition(data,actor,body,today=new Date().toISOString().slice(
   if(typeof body.eventId!=='string'||!/^[a-zA-Z0-9_-]{12,80}$/.test(body.eventId))fail('invalid_id');if(d.events.length>=2000)fail('history_full',409);if(!dateOK(body.date)||body.date>today)fail('invalid_date');const schedule=scheduleTerms(body.schedule);for(const e of d.events)if(e.kind==='schedule'&&e.status==='pending'){e.status='rejected';e.resolvedBy=actor.id}d.events.push({id:body.eventId,actor:actor.id,status:'pending',kind:'schedule',date:body.date,schedule});return d;
  }
  if(body.action==='move'){if(typeof body.eventId!=='string'||!/^[a-zA-Z0-9_-]{12,80}$/.test(body.eventId))fail('invalid_id');if(d.events.length>=2000)fail('history_full',409);const to=typeof body.to==='string'?body.to:'';if(!/^\d{4}-\d{2}-\d{2}T([01]\d|2[0-3]):[0-5]\d$/.test(to)||!dateOK(to.slice(0,10))||to.slice(0,10)<today)fail('invalid_date');let counter=false;for(const x of d.events)if(x.kind==='move'&&x.status==='pending'){if(x.actor!==actor.id)counter=true;x.status='rejected';x.resolvedBy=actor.id}d.events.push({id:body.eventId,actor:actor.id,status:'pending',kind:'move',date:to.slice(0,10),to,from:typeof body.from==='string'&&/^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}$/.test(body.from)?body.from:d.terms?.date?d.terms.date+'T'+(d.terms.time||''):'',counter});return d}
+ if(body.action==='cancel'){if(typeof body.eventId!=='string'||!/^[a-zA-Z0-9_-]{12,80}$/.test(body.eventId))fail('invalid_id');if(d.events.length>=2000)fail('history_full',409);const at=typeof body.at==='string'&&/^\d{4}-\d{2}-\d{2}T([01]\d|2[0-3]):[0-5]\d$/.test(body.at)?body.at:'';if(!at||!dateOK(at.slice(0,10))||at.slice(0,10)<today)fail('invalid_date');if(d.events.some(x=>x.kind==='cancel'&&x.at===at&&x.status==='confirmed'))fail('cancel_exists',409);
+  // Only a client's cancel inside the free-cancel window is late; a specialist's cancel never charges the client.
+  const late=body.late===true&&d.client?.id===actor.id&&Number(d.terms?.cancelHours)>0,e={id:body.eventId,actor:actor.id,status:'confirmed',kind:'cancel',date:at.slice(0,10),at,late};
+  if(late&&d.terms?.paymentType==='package'){const s=sharedSummary(d,e.date),lot=s.lots.filter(x=>x.remaining>0).sort((a,b)=>d.events.find(p=>p.id===a.id).date.localeCompare(d.events.find(p=>p.id===b.id).date))[0];if(lot)e.lot=lot.id}
+  for(const x of d.events)if(x.kind==='move'&&x.status==='pending'){x.status='rejected';x.resolvedBy=actor.id}d.events.push(e);return d}
  if(typeof body.eventId!=='string'||!/^[a-zA-Z0-9_-]{12,80}$/.test(body.eventId))fail('invalid_id');if(d.events.length>=2000)fail('history_full',409);
  if(!dateOK(body.date)||body.date>today)fail('invalid_date');
  const t=d.terms,s=sharedSummary(d,body.date);if((body.action==='purchase'||body.action==='visit'&&t.paymentType==='visit')&&t.amount===null)fail('price_required');let e={id:body.eventId,actor:actor.id,status:'pending',date:body.date,kind:body.action};
@@ -102,7 +109,7 @@ export function transition(data,actor,body,today=new Date().toISOString().slice(
 }
 function validateEvent(d,e,today){const s=sharedSummary(d,e.date);if(e.kind==='payment'&&e.amount>s.due)fail('payment_exceeds_due',409);if(e.kind==='visit'&&e.lot&&!s.lots.some(x=>x.id===e.lot&&x.remaining>0&&d.events.find(p=>p.id===x.id).date<=e.date))fail('pack_empty',409)}
 const APP='https://moi-zapisi-mobile.queeny-inna.chatgpt.site';
-export function noticeButtons(d,id,b){const open={text:'Открыть',web_app:{url:APP+'/?record='+encodeURIComponent(id)}},e=d.events?.find(x=>x.id===b.eventId),ok=e&&e.status==='pending'&&('y:'+e.id).length<=64;if(ok&&b.action==='visit')return [[{text:'Да, было',callback_data:'y:'+e.id},{text:'Не было',callback_data:'n:'+e.id}]];if(ok&&b.action==='move')return [[{text:'Подходит',callback_data:'y:'+e.id},{text:'Другое время',web_app:{url:APP+'/?record='+encodeURIComponent(id)+'&move=1'}}]];return [[open]]}
+export function noticeButtons(d,id,b){const open={text:'Открыть',web_app:{url:APP+'/?record='+encodeURIComponent(id)}},e=d.events?.find(x=>x.id===b.eventId),ok=e&&e.status==='pending'&&('y:'+e.id).length<=64;if(e&&e.kind==='cancel'&&b.action==='cancel'&&('k:'+e.id).length<=64)return [[{text:'Ничего страшного',callback_data:'k:'+e.id}]];if(ok&&b.action==='visit')return [[{text:'Да, было',callback_data:'y:'+e.id},{text:'Не было',callback_data:'n:'+e.id}]];if(ok&&b.action==='move')return [[{text:'Подходит',callback_data:'y:'+e.id},{text:'Другое',web_app:{url:APP+'/?record='+encodeURIComponent(id)+'&move=1'}}]];return [[open]]}
 export async function sendNotice(env,transport,data,id,actor,b){const other=data.provider?.id===actor.id?data.client:data.provider;if(!other)return;await transport('https://api.telegram.org/bot'+env.TELEGRAM_BOT_TOKEN+'/sendMessage',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({chat_id:Number(other.id),text:noticeText(data,actor,b),reply_markup:{inline_keyboard:noticeButtons(data,id,b)}})})}
 function publicRecord(row){const data=JSON.parse(row.data);return {...data,id:row.id,version:row.version,summary:sharedSummary(data)}}
 export async function persistSharedConnection(env,row,d,includeChildren=false){

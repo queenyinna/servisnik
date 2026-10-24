@@ -194,3 +194,5 @@ body .card-status .status-pill.status-wait,body #workView .card-status .status-p
 body .card-status .status-pill.status-done,body #workView .card-status .status-pill.status-done{background:#e1eee4;color:#336749}
 body .card-status .status-pill.status-missed,body #workView .card-status .status-pill.status-missed{background:#f1e6d8;color:#7a5420}
 body .card-status .status-pill.status-cancel,body #workView .card-status .status-pill.status-cancel{background:var(--ui-soft);color:var(--ui-muted)}
+body .ui-swipe .client-attend.client-move,body #workView .ui-swipe .client-attend.client-move{background:var(--ui-soft);color:var(--ui-ink)}
+body .ui-swipe .client-delete.client-cancel,body #workView .ui-swipe .client-delete.client-cancel{background:#f1e6d8;color:#7a5420}
