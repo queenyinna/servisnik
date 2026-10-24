@@ -178,3 +178,5 @@ body .offer-form{display:grid;gap:12px}
 body .offer-form .offer-new{width:100%;min-height:48px;margin:0 0 4px}
 body .offer-submit{position:sticky;bottom:0;padding:12px 0 calc(12px + env(safe-area-inset-bottom,0px));background:linear-gradient(transparent,var(--ui-page,#f6f6f7) 30%)}
 body .offer-submit .primary{width:100%;margin:0}
+body .setup-examples{display:grid;gap:8px;margin:14px 2px 0}
+body .setup-example{min-height:44px;text-align:left;border:0;border-radius:14px;background:#ececf0;color:#55555b;font:inherit;font-size:14px;padding:10px 14px}
