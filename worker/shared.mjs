@@ -31,6 +31,16 @@ function terms(raw){
  const date=raw.date||'';if(date&&!dateOK(date))fail('invalid_date');const time=raw.time||'';if(time&&!/^([01]\d|2[0-3]):[0-5]\d$/.test(time))fail('invalid_time');
  return {name:raw.name.trim(),paymentType:raw.paymentType,amount:price,count,duration,singlePrice,date,time};
 }
+function scheduleTerms(raw){
+ if(!raw||typeof raw!=='object'||!['none','weekly','monthly'].includes(raw.frequency))fail('invalid_schedule');
+ const date=raw.date||'',scheduleTime=raw.scheduleTime||'',scheduleUntil=raw.scheduleUntil||'',timeOK=v=>typeof v==='string'&&(!v||/^([01]\d|2[0-3]):[0-5]\d$/.test(v));
+ if(date&&!dateOK(date)||scheduleUntil&&!dateOK(scheduleUntil)||scheduleUntil&&date&&scheduleUntil<date||!timeOK(scheduleTime))fail('invalid_schedule');
+ const days=(value,min,max)=>{if(value===undefined)return [];if(!Array.isArray(value)||value.length>max-min+1||value.some(x=>!Number.isInteger(x)||x<min||x>max))fail('invalid_schedule');return [...new Set(value)].sort((a,b)=>a-b)};
+ const weekdays=days(raw.weekdays,0,6),monthDays=days(raw.monthDays,1,31),weekdayTimes={};
+ if(raw.frequency==='weekly'&&!weekdays.length||raw.frequency==='monthly'&&!monthDays.length)fail('invalid_schedule');
+ for(const [key,value]of Object.entries(raw.weekdayTimes||{})){if(!/^[0-6]$/.test(key)||!timeOK(value))fail('invalid_schedule');weekdayTimes[key]=value}
+ return {date,scheduleTime,frequency:raw.frequency,weekdays,monthDays,weekdayTimes,scheduleUntil};
+}
 function termEnd(start,months){const d=new Date(start+'T12:00:00Z'),day=d.getUTCDate();d.setUTCDate(1);d.setUTCMonth(d.getUTCMonth()+months);const last=new Date(Date.UTC(d.getUTCFullYear(),d.getUTCMonth()+1,0)).getUTCDate();d.setUTCDate(Math.min(day,last));return d.toISOString().slice(0,10)}
 export function sharedSummary(data,today=new Date().toISOString().slice(0,10)){
  const confirmed=data.events.filter(x=>x.status==='confirmed'&&x.date<=today),reversed=new Set(confirmed.filter(x=>x.kind==='undo').map(x=>x.ref)),events=confirmed.filter(x=>!reversed.has(x.id));
@@ -42,12 +52,14 @@ export function sharedSummary(data,today=new Date().toISOString().slice(0,10)){
 }
 export function noticeText(d,actor,b={}){
  const service=d.terms?.name||'Запись',who=actor?.name||'Telegram',rub=n=>new Intl.NumberFormat('ru-RU').format(n)+' ₽',day=x=>new Intl.DateTimeFormat('ru-RU',{day:'numeric',month:'short',timeZone:'UTC'}).format(new Date(x+'T12:00:00Z')).replace(/\./g,'');
- const label=e=>(e.kind==='purchase'?(e.type==='period'?'начало абонемента':'начало пакета'):e.kind==='payment'?'оплата '+rub(e.amount):e.kind==='visit'?'посещение':'возврат посещения')+' · '+day(e.date);
+ const label=e=>(e.kind==='purchase'?(e.type==='period'?'начало абонемента':'начало пакета'):e.kind==='payment'?'оплата '+rub(e.amount):e.kind==='visit'?'посещение':e.kind==='schedule'?'расписание':'возврат посещения')+' · '+day(e.date);
  const e=d.events?.find(x=>x.id===b.eventId);let body;const at=v=>{if(!v)return '';const w=new Intl.DateTimeFormat('ru-RU',{weekday:'short',day:'numeric',month:'short',timeZone:'UTC'}).format(new Date(v.slice(0,10)+'T12:00:00Z')).replace(/\./g,'');return v.length>11&&v.slice(11)?w+' · '+v.slice(11,16):w};
  if(b.action==='accept')body='🎉 '+who+' теперь с тобой в Сервиснике';
  else if(b.action==='offer')body=d.state==='active'?who+' добавил(-а) твои услуги! Загляни и спланируй занятия ✨':'✏️ Новые условия от '+who+'. Загляни.';
  else if(b.action==='activate')body='✅ Условия подтверждены: '+who;
  else if(b.action==='close')body=who+' больше не ведёт с тобой записи. История осталась 📁';
+ else if(e?.kind==='schedule'&&b.action==='schedule')body=who+' предлагает расписание 📅\nПроверь в приложении и подтверди.';
+ else if(e?.kind==='schedule'&&b.action==='confirm')body='Расписание подтверждено ✅';
  else if(e?.kind==='move'&&b.action==='confirm')body='Перенос подтверждён ✅ '+at(e.to);
  else if(e?.kind==='move'&&b.action==='move')body=e.counter?who+' предлагает другое время:\n'+at(e.to)+' 🤝':who+' просит перенести занятие:\n'+(e.from?at(e.from)+' → ':'')+at(e.to)+' ↻';
  else if(e?.kind==='visit'&&b.action==='visit')body=who+' отметил(-а) занятие ✅\n'+at(e.date)+'. Всё верно?';
@@ -68,9 +80,12 @@ export function transition(data,actor,body,today=new Date().toISOString().slice(
  if(body.action==='confirm'||body.action==='reject'){
   if(!existing)fail('not_found',404);if(existing.actor===actor.id)fail('other_party_required',403);
   const status=body.action==='confirm'?'confirmed':'rejected';if(existing.status===status)return d;if(existing.status!=='pending')fail('already_resolved',409);
-  if(status==='confirmed')validateEvent(d,existing,today);existing.status=status;existing.resolvedBy=actor.id;if(status==='confirmed'&&existing.kind==='move'){d.terms.date=existing.to.slice(0,10);d.terms.time=existing.to.slice(11,16)}return d;
+  if(status==='confirmed')validateEvent(d,existing,today);existing.status=status;existing.resolvedBy=actor.id;if(status==='confirmed'&&existing.kind==='schedule'){d.schedule=existing.schedule;d.scheduleEventId=existing.id}return d;
  }
  if(existing){if(existing.actor!==actor.id)fail('conflict',409);return d}
+ if(body.action==='schedule'){
+  if(typeof body.eventId!=='string'||!/^[a-zA-Z0-9_-]{12,80}$/.test(body.eventId))fail('invalid_id');if(d.events.length>=2000)fail('history_full',409);if(!dateOK(body.date)||body.date>today)fail('invalid_date');const schedule=scheduleTerms(body.schedule);for(const e of d.events)if(e.kind==='schedule'&&e.status==='pending'){e.status='rejected';e.resolvedBy=actor.id}d.events.push({id:body.eventId,actor:actor.id,status:'pending',kind:'schedule',date:body.date,schedule});return d;
+ }
  if(body.action==='move'){if(typeof body.eventId!=='string'||!/^[a-zA-Z0-9_-]{12,80}$/.test(body.eventId))fail('invalid_id');if(d.events.length>=2000)fail('history_full',409);const to=typeof body.to==='string'?body.to:'';if(!/^\d{4}-\d{2}-\d{2}T([01]\d|2[0-3]):[0-5]\d$/.test(to)||!dateOK(to.slice(0,10))||to.slice(0,10)<today)fail('invalid_date');let counter=false;for(const x of d.events)if(x.kind==='move'&&x.status==='pending'){if(x.actor!==actor.id)counter=true;x.status='rejected';x.resolvedBy=actor.id}d.events.push({id:body.eventId,actor:actor.id,status:'pending',kind:'move',date:to.slice(0,10),to,from:typeof body.from==='string'&&/^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}$/.test(body.from)?body.from:d.terms?.date?d.terms.date+'T'+(d.terms.time||''):'',counter});return d}
  if(typeof body.eventId!=='string'||!/^[a-zA-Z0-9_-]{12,80}$/.test(body.eventId))fail('invalid_id');if(d.events.length>=2000)fail('history_full',409);
  if(!dateOK(body.date)||body.date>today)fail('invalid_date');
@@ -144,4 +159,5 @@ export async function sharedRoute(request,env,defer=null,transport=fetch){
   fail('not_found',404);
  }catch(e){return sj({error:e.status?e.message:'storage_error'},e.status||503)}
 }
+
 
