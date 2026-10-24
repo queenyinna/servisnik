@@ -153,6 +153,15 @@ export async function sharedRoute(request,env,defer=null,transport=fetch){
   }
   if(path==='change'&&request.method==='POST'){
    const row=await env.DB.prepare('SELECT * FROM shared_records WHERE id = ? AND (provider_id = ? OR client_id = ?)').bind(b.id||'',actor.id,actor.id).first();if(!row)fail('not_found',404);
+   if(b.action==='close'&&b.scope==='connection'){
+    const current=JSON.parse(row.data);if(current.provider&&current.client&&current.state==='active'){
+     const provider=current.provider.id,client=current.client.id,readPair=()=>env.DB.prepare('SELECT * FROM shared_records WHERE provider_id = ? AND client_id = ?').bind(provider,client).all();
+     let pair=await readPair();if(pair.results.every(x=>JSON.parse(x.data).closed))return sj({record:publicRecord(row),records:pair.results.map(publicRecord)});
+     if(!Number.isInteger(b.version)||row.version!==b.version)fail('conflict',409);
+     const updated=await env.DB.prepare("WITH target AS MATERIALIZED (SELECT id FROM shared_records WHERE id = ? AND version = ?) UPDATE shared_records SET data = json_set(data, '$.closed', json('true')), version = version + 1, updated_at = ? WHERE provider_id = ? AND client_id = ? AND coalesce(json_extract(data, '$.closed'), 0) != 1 AND EXISTS (SELECT 1 FROM target)").bind(row.id,b.version,Date.now(),provider,client).run();
+     if(!updated.meta.changes)fail('conflict',409);pair=await readPair();const records=pair.results.map(publicRecord),record=records.find(x=>x.id===row.id);notify(record,row.id,actor,b);return sj({record,records});
+    }
+   }
    const current=JSON.parse(row.data),prior=current.events.find(e=>e.id===b.eventId);if(prior&&((['confirm','reject'].includes(b.action)&&prior.resolvedBy===actor.id&&prior.status===(b.action==='confirm'?'confirmed':'rejected'))||(prior.actor===actor.id&&prior.kind===b.action&&prior.date===b.date)))return sj({record:publicRecord(row)});if(!Number.isInteger(b.version)||row.version!==b.version)fail('conflict',409);
    const offset=Number.isInteger(b.timezoneOffset)&&b.timezoneOffset>=-840&&b.timezoneOffset<=720?b.timezoneOffset:0,localToday=new Date(Date.now()-offset*60000).toISOString().slice(0,10);const d=transition(JSON.parse(row.data),actor,b,localToday),saved=await persistSharedConnection(env,row,d,b.action==='activate'||b.action==='offer'&&d.state==='active');notify(d,row.id,actor,b);return sj(saved);
   }
