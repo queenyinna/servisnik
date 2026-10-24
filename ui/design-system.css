@@ -194,3 +194,15 @@ body .card-status .status-pill.status-wait,body #workView .card-status .status-p
 body .card-status .status-pill.status-done,body #workView .card-status .status-pill.status-done{background:#e1eee4;color:#336749}
 body .card-status .status-pill.status-missed,body #workView .card-status .status-pill.status-missed{background:#f1e6d8;color:#7a5420}
 body .card-status .status-pill.status-cancel,body #workView .card-status .status-pill.status-cancel{background:var(--ui-soft);color:var(--ui-muted)}
+body .ui-swipe .client-attend.client-move,body #workView .ui-swipe .client-attend.client-move{background:var(--ui-soft);color:var(--ui-ink)}
+body .ui-swipe .client-delete.client-cancel,body #workView .ui-swipe .client-delete.client-cancel{background:#f1e6d8;color:#7a5420}
+
+body #personalView .home-tabs{flex:1;min-width:0}
+body #personalView:not(.show-history) #historyList,body #personalView.show-history #cards,body #personalView.show-history #sharedServices{display:none}
+body .history-list{display:grid;gap:10px}
+body .history-row{display:flex;align-items:center;gap:12px;width:100%;padding:14px 16px;border:0;border-radius:var(--ui-radius-card);background:var(--ui-surface);color:var(--ui-ink);font:inherit;text-align:left}
+body .history-row>div{display:grid;gap:2px;flex:1;min-width:0}
+body .history-row .status-pill{flex:none;padding:6px 10px;border-radius:12px;font-size:14px;font-weight:600;background:var(--ui-soft)}
+body .history-row .status-pill.status-wait{background:#e8edf6;color:#2f4f7a}body .history-row .status-pill.status-done{background:#e1eee4;color:#336749}body .history-row .status-pill.status-missed{background:#f1e6d8;color:#7a5420}body .history-row .status-pill.status-cancel{background:var(--ui-soft);color:var(--ui-muted)}
+body .cancel-chips{display:grid;grid-template-columns:repeat(4,1fr);gap:6px;margin:6px 0}
+body .cancel-chips .choice{min-height:44px}
