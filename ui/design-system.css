@@ -165,3 +165,5 @@ body .start-choices{display:grid;gap:10px}
 body .start-choice{display:grid;gap:4px;width:100%;text-align:left;padding:16px;border:1px solid #e4e4e7;border-radius:var(--ui-radius-card);background:var(--ui-surface);color:var(--ui-ink);font:inherit}
 body .start-choice strong{font-size:17px;font-weight:600}
 body .start-choice span{font-size:14px;color:var(--ui-muted);line-height:1.4}
+
+body .ui-swipe .client-delete.client-move,body #workView .ui-swipe .client-delete.client-move{background:#ececf0;color:#191919}

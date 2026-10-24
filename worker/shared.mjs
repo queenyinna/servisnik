@@ -41,13 +41,16 @@ export function sharedSummary(data,today=new Date().toISOString().slice(0,10)){
  return {charged:round(charged),paid:round(paid),due:round(Math.max(0,charged-paid)),prepaid:round(prepaid),remaining,visits,until,active:!!until&&today<until,lots};
 }
 export function noticeText(d,actor,b={}){
- const service=d.terms?.name||'Запись',who=actor?.name||'Telegram',rub=n=>new Intl.NumberFormat('ru-RU').format(n)+' ₽',day=x=>new Intl.DateTimeFormat('ru-RU',{day:'numeric',month:'short',timeZone:'UTC'}).format(new Date(x+'T12:00:00Z'));
+ const service=d.terms?.name||'Запись',who=actor?.name||'Telegram',rub=n=>new Intl.NumberFormat('ru-RU').format(n)+' ₽',day=x=>new Intl.DateTimeFormat('ru-RU',{day:'numeric',month:'short',timeZone:'UTC'}).format(new Date(x+'T12:00:00Z')).replace(/\./g,'');
  const label=e=>(e.kind==='purchase'?(e.type==='period'?'начало абонемента':'начало пакета'):e.kind==='payment'?'оплата '+rub(e.amount):e.kind==='visit'?'посещение':'возврат посещения')+' · '+day(e.date);
- const e=d.events?.find(x=>x.id===b.eventId);let body;
+ const e=d.events?.find(x=>x.id===b.eventId);let body;const at=v=>{if(!v)return '';const w=new Intl.DateTimeFormat('ru-RU',{weekday:'short',day:'numeric',month:'short',timeZone:'UTC'}).format(new Date(v.slice(0,10)+'T12:00:00Z')).replace(/\./g,'');return v.length>11&&v.slice(11)?w+' · '+v.slice(11,16):w};
  if(b.action==='accept')body='🎉 '+who+' теперь с тобой в Сервиснике';
  else if(b.action==='offer')body=d.state==='active'?who+' добавил(-а) твои услуги! Загляни и спланируй занятия ✨':'✏️ Новые условия от '+who+'. Загляни.';
  else if(b.action==='activate')body='✅ Условия подтверждены: '+who;
  else if(b.action==='close')body=who+' больше не ведёт с тобой записи. История осталась 📁';
+ else if(e?.kind==='move'&&b.action==='confirm')body='Перенос подтверждён ✅ '+at(e.to);
+ else if(e?.kind==='move'&&b.action==='move')body=e.counter?who+' предлагает другое время:\n'+at(e.to)+' 🤝':who+' просит перенести занятие:\n'+(e.from?at(e.from)+' → ':'')+at(e.to)+' ↻';
+ else if(e?.kind==='visit'&&b.action==='visit')body=who+' отметил(-а) занятие ✅\n'+at(e.date)+'. Всё верно?';
  else if(e&&b.action==='confirm')body='✅ Подтверждено: '+label(e);
  else if(e&&b.action==='reject')body='🤔 Не подтверждено: '+label(e)+'. Загляни, что не так.';
  else if(e)body=who+': '+label(e)+'\nВсё так? Подтверди 👌';
@@ -65,9 +68,10 @@ export function transition(data,actor,body,today=new Date().toISOString().slice(
  if(body.action==='confirm'||body.action==='reject'){
   if(!existing)fail('not_found',404);if(existing.actor===actor.id)fail('other_party_required',403);
   const status=body.action==='confirm'?'confirmed':'rejected';if(existing.status===status)return d;if(existing.status!=='pending')fail('already_resolved',409);
-  if(status==='confirmed')validateEvent(d,existing,today);existing.status=status;existing.resolvedBy=actor.id;return d;
+  if(status==='confirmed')validateEvent(d,existing,today);existing.status=status;existing.resolvedBy=actor.id;if(status==='confirmed'&&existing.kind==='move'){d.terms.date=existing.to.slice(0,10);d.terms.time=existing.to.slice(11,16)}return d;
  }
  if(existing){if(existing.actor!==actor.id)fail('conflict',409);return d}
+ if(body.action==='move'){if(typeof body.eventId!=='string'||!/^[a-zA-Z0-9_-]{12,80}$/.test(body.eventId))fail('invalid_id');if(d.events.length>=2000)fail('history_full',409);const to=typeof body.to==='string'?body.to:'';if(!/^\d{4}-\d{2}-\d{2}T([01]\d|2[0-3]):[0-5]\d$/.test(to)||!dateOK(to.slice(0,10))||to.slice(0,10)<today)fail('invalid_date');let counter=false;for(const x of d.events)if(x.kind==='move'&&x.status==='pending'){if(x.actor!==actor.id)counter=true;x.status='rejected';x.resolvedBy=actor.id}d.events.push({id:body.eventId,actor:actor.id,status:'pending',kind:'move',date:to.slice(0,10),to,from:d.terms?.date?d.terms.date+'T'+(d.terms.time||''):'',counter});return d}
  if(typeof body.eventId!=='string'||!/^[a-zA-Z0-9_-]{12,80}$/.test(body.eventId))fail('invalid_id');if(d.events.length>=2000)fail('history_full',409);
  if(!dateOK(body.date)||body.date>today)fail('invalid_date');
  const t=d.terms,s=sharedSummary(d,body.date);if((body.action==='purchase'||body.action==='visit'&&t.paymentType==='visit')&&t.amount===null)fail('price_required');let e={id:body.eventId,actor:actor.id,status:'pending',date:body.date,kind:body.action};
@@ -82,8 +86,11 @@ export function transition(data,actor,body,today=new Date().toISOString().slice(
  validateEvent(d,e,today);d.events.push(e);return d;
 }
 function validateEvent(d,e,today){const s=sharedSummary(d,e.date);if(e.kind==='payment'&&e.amount>s.due)fail('payment_exceeds_due',409);if(e.kind==='visit'&&e.lot&&!s.lots.some(x=>x.id===e.lot&&x.remaining>0&&d.events.find(p=>p.id===x.id).date<=e.date))fail('pack_empty',409)}
+const APP='https://moi-zapisi-mobile.queeny-inna.chatgpt.site';
+export function noticeButtons(d,id,b){const open={text:'Открыть',web_app:{url:APP+'/?record='+encodeURIComponent(id)}},e=d.events?.find(x=>x.id===b.eventId),ok=e&&e.status==='pending'&&('y:'+e.id).length<=64;if(ok&&b.action==='visit')return [[{text:'Да, было',callback_data:'y:'+e.id},{text:'Не было',callback_data:'n:'+e.id}]];if(ok&&b.action==='move')return [[{text:'Подходит',callback_data:'y:'+e.id},{text:'Другое время',web_app:{url:APP+'/?record='+encodeURIComponent(id)+'&move=1'}}]];return [[open]]}
+export async function sendNotice(env,transport,data,id,actor,b){const other=data.provider?.id===actor.id?data.client:data.provider;if(!other)return;await transport('https://api.telegram.org/bot'+env.TELEGRAM_BOT_TOKEN+'/sendMessage',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({chat_id:Number(other.id),text:noticeText(data,actor,b),reply_markup:{inline_keyboard:noticeButtons(data,id,b)}})})}
 function publicRecord(row){const data=JSON.parse(row.data);return {id:row.id,version:row.version,...data,summary:sharedSummary(data)}}
-async function persistSharedConnection(env,row,d,includeChildren=false){
+export async function persistSharedConnection(env,row,d,includeChildren=false){
 const update=env.DB.prepare('UPDATE shared_records SET provider_id = ?, client_id = ?, data = ?, version = version + 1, updated_at = ? WHERE id = ? AND version = ?').bind(d.provider?.id||null,d.client?.id||null,JSON.stringify(d),Date.now(),row.id,row.version),children=(includeChildren?d.additionalTerms||[]:[]).map(x=>({id:x.id,version:1,provider:d.provider,client:d.client,state:d.state,terms:x.terms,events:[],closed:false}));
    let result;if(children.length){if(typeof env.DB.batch!=='function')fail('storage_unavailable',503);const inserts=[];for(const child of children)inserts.push(env.DB.prepare('INSERT INTO shared_records (id, creator_id, provider_id, client_id, token_hash, expires_at, version, data, updated_at) SELECT ?, ?, ?, ?, ?, ?, 1, ?, ? WHERE EXISTS (SELECT 1 FROM shared_records WHERE id = ? AND version = ? AND client_id = ? AND provider_id = ?)').bind(child.id,row.creator_id,d.provider.id,d.client.id,await hashToken(row.token_hash+child.id),row.expires_at,JSON.stringify(child),Date.now(),row.id,row.version+1,d.client.id,d.provider.id));result=(await env.DB.batch([update,...inserts]))[0]}else result=await update.run();if(!result.meta.changes)fail('conflict',409);
  const record={id:row.id,version:row.version+1,...d,summary:sharedSummary(d)};return {record,records:[record,...children.map(x=>({...x,summary:sharedSummary(x)}))]};
@@ -92,7 +99,7 @@ const update=env.DB.prepare('UPDATE shared_records SET provider_id = ?, client_i
 const TEST_DATA_CUTOFF=1792753863075;
 let testDataCleanupDone=false;
 export async function sharedRoute(request,env,defer=null,transport=fetch){
- const url=new URL(request.url);if(!url.pathname.startsWith('/api/shared/'))return null;const notify=(data,id,actor,b)=>{const other=data.provider?.id===actor.id?data.client:data.provider;if(!other||!defer)return;const task=transport('https://api.telegram.org/bot'+env.TELEGRAM_BOT_TOKEN+'/sendMessage',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({chat_id:Number(other.id),text:noticeText(data,actor,b),reply_markup:{inline_keyboard:[[{text:'Открыть',web_app:{url:'https://moi-zapisi-mobile.queeny-inna.chatgpt.site/?record='+encodeURIComponent(id)}}]]}})}).catch(()=>{});try{defer(task)}catch{}};
+ const url=new URL(request.url);if(!url.pathname.startsWith('/api/shared/'))return null;const notify=(data,id,actor,b)=>{if(!defer)return;const task=sendNotice(env,transport,data,id,actor,b).catch(()=>{});try{defer(task)}catch{}};
  try{
   if(!env.DB)fail('storage_unavailable',503);
   if(!testDataCleanupDone){await env.DB.prepare('DELETE FROM shared_records WHERE updated_at <= ?').bind(TEST_DATA_CUTOFF).run();await env.DB.prepare('DELETE FROM shared_records WHERE id IN (?, ?)').bind('d112e88f-cdc7-41ae-a63f-c659bdbaa685','db80e2cc-e8fd-4ea2-812a-c93edcd5a9e6').run();await env.DB.prepare('DELETE FROM contact_picks WHERE expires_at <= ?').bind(TEST_DATA_CUTOFF+300000).run();testDataCleanupDone=true;}
