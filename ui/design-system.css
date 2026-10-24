@@ -167,3 +167,29 @@ body .start-choice strong{font-size:17px;font-weight:600}
 body .start-choice span{font-size:14px;color:var(--ui-muted);line-height:1.4}
 
 body .ui-swipe .client-delete.client-move,body #workView .ui-swipe .client-delete.client-move{background:#ececf0;color:#191919}
+body :is(.shared-service,.shared-client) .resource-battery{margin:8px 0 4px}
+body :is(.shared-service,.shared-client) .resource-shell{height:6px;border:0;border-radius:8px;background:#eee;padding:0}
+body :is(.shared-service,.shared-client) .resource-fill{height:6px;background:#222;border-radius:8px}
+body :is(.shared-service,.shared-client) .resource-tip{display:none}
+body #workView .shared-client .resource-tip{display:none}body #workView .shared-client .resource-shell{border:0;padding:0}
+body .start-choice.selected{border-color:var(--ui-ink);box-shadow:inset 0 0 0 1px var(--ui-ink)}
+body .setup-skip{display:block;margin:6px auto 0;min-height:44px;border:0;background:none;color:var(--ui-muted);font:inherit;font-size:15px}
+body .offer-form{display:grid;gap:12px}
+body .offer-form .offer-new{width:100%;min-height:48px;margin:0 0 4px}
+body .offer-submit{position:sticky;bottom:0;padding:12px 0 calc(12px + env(safe-area-inset-bottom,0px));background:linear-gradient(transparent,var(--ui-page,#f6f6f7) 30%)}
+body .offer-submit .primary{width:100%;margin:0}
+body .setup-examples{display:grid;gap:8px;margin:14px 2px 0}
+body .setup-example{min-height:44px;text-align:left;border:0;border-radius:14px;background:#ececf0;color:#55555b;font:inherit;font-size:14px;padding:10px 14px}
+body .calendar-head{display:flex;align-items:center;justify-content:space-between;margin:12px 0 4px}
+body .calendar-head strong{font-size:16px;font-weight:600;text-transform:capitalize}
+body .calendar-nav{width:44px;height:44px;border:0;border-radius:12px;background:#ececf0;color:var(--ui-ink);font-size:22px}
+body .calendar-dow{text-align:center;font-size:12px;color:var(--ui-muted);padding:4px 0}
+body .setup-days .choice:disabled{opacity:.35}
+
+body .ui-swipe.has-status{display:flex;flex-wrap:wrap;background:var(--ui-surface)}
+body .card-status{width:100%;position:relative;z-index:2;padding:0 16px 14px;background:var(--ui-surface);border-radius:0 0 var(--ui-radius-card) var(--ui-radius-card)}
+body .status-pill{display:block;width:100%;min-height:44px;line-height:44px;padding:0 12px;border:0;border-radius:14px;font:inherit;font-weight:600;text-align:center;background:var(--ui-soft);color:var(--ui-ink)}
+body .status-pill.status-wait,body .status-pill.status-ask{background:#e8edf6;color:#2f4f7a}
+body .status-pill.status-done{background:#e1eee4;color:#336749}
+body .status-pill.status-missed{background:#f1e6d8;color:#7a5420}
+body .status-pill.status-cancel{background:var(--ui-soft);color:var(--ui-muted)}
