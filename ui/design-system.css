@@ -185,3 +185,11 @@ body .calendar-head strong{font-size:16px;font-weight:600;text-transform:capital
 body .calendar-nav{width:44px;height:44px;border:0;border-radius:12px;background:#ececf0;color:var(--ui-ink);font-size:22px}
 body .calendar-dow{text-align:center;font-size:12px;color:var(--ui-muted);padding:4px 0}
 body .setup-days .choice:disabled{opacity:.35}
+
+body .ui-swipe.has-status{display:flex;flex-wrap:wrap;background:var(--ui-surface)}
+body .card-status{width:100%;position:relative;z-index:2;padding:0 16px 14px;background:var(--ui-surface);border-radius:0 0 var(--ui-radius-card) var(--ui-radius-card)}
+body .status-pill{display:block;width:100%;min-height:44px;line-height:44px;padding:0 12px;border:0;border-radius:14px;font:inherit;font-weight:600;text-align:center;background:var(--ui-soft);color:var(--ui-ink)}
+body .status-pill.status-wait,body .status-pill.status-ask{background:#e8edf6;color:#2f4f7a}
+body .status-pill.status-done{background:#e1eee4;color:#336749}
+body .status-pill.status-missed{background:#f1e6d8;color:#7a5420}
+body .status-pill.status-cancel{background:var(--ui-soft);color:var(--ui-muted)}
