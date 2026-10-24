@@ -162,7 +162,7 @@ export async function sharedRoute(request,env,defer=null,transport=fetch){
    if(typeof b.token!=='string'||!/^[a-f0-9]{48}$/.test(b.token))fail('invalid_invite');const row=await env.DB.prepare('SELECT * FROM shared_records WHERE token_hash = ?').bind(await hashToken(b.token)).first();if(!row)fail('invite_missing',404);const d=JSON.parse(row.data);if(d.closed)fail('connection_closed',409);
    if(row.provider_id===actor.id||row.client_id===actor.id)return sj({record:publicRecord(row)});
    if(row.expires_at<Date.now())fail('invite_expired',410);if(d.provider&&d.client)fail('invite_used',409);
-   if(path==='preview'){const from=d.provider||d.client;return sj({invitation:{version:row.version,from:{name:from.name,username:from.username||'',photo_url:telegramPhoto(from.photo_url)},role:d.provider?'client':'provider',terms:d.terms,services:d.terms?[d.terms,...(d.additionalTerms||[]).map(x=>x.terms)]:[]}})}
+   if(path==='preview'){const from=d.provider||d.client;return sj({invitation:{version:row.version,from:{name:from.name,username:from.username||'',photo_url:telegramPhoto(from.photo_url)},role:d.provider?'client':'provider',terms:d.terms,services:d.terms?[d.terms,...(d.additionalTerms||[]).map(x=>x.terms)]:[],schedule:d.schedule||null}})}
    if(b.confirmTerms===true&&b.expectedVersion!==row.version)fail('conflict',409);if(!d.provider)d.provider=actor;else{d.client=actor;if(b.confirmTerms===true&&d.state==='offered'&&d.terms)d.state='active'}
    const saved=await persistSharedConnection(env,row,d,true);notify(d,row.id,actor,{action:'accept'});return sj(saved);
   }
